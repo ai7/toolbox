@@ -1,0 +1,203 @@
+========================================
+Frequently Asked Questions about LmpUtil
+========================================
+
+List of Questions Answered in this FAQ:
+-----------------------------------------------------------------------------
+ 1) Why do I need to use -viewer when I can press F12 during the demo?
+ 2) Will one version of LMP work under another version of Doom?
+ 3) Why can't I change the LMP version for my 1.1 or 1.2 LMPs?
+ 4) Does LmpUtil support Heretic LMPs?
+ 5) I heard something about wildcards support for LmpUtil?
+ 6) What is a game tic? How do I use it with -cut and -wait?
+ 7) Why doesn't -convert support wildcards?
+ 8) What hints do you have for using the -cut parameter?
+ 9) More information about the -cut parameter.
+10) What exactly does the -wait do, do I need to use it?
+11) LmpUtil says my LMP are missing bytes, what does it mean? what do i do?
+12) How do I access LMPs that doesn't have any extensions?
+13) So, does the -rp (remove pause) option really work?
+14) Why can't the -rp option work on multiple files like the -viewer?
+-----------------------------------------------------------------------------
+
+Q : Why do I need to use -viewer when I can press F12 during the demo?
+
+A : F12 during the demo will not completely switch you to the other
+    player as the status bar, sound, and screen display still shows
+    the current player, not the one you switched to. This can be quite
+    confusing at times.
+
+    You can, for example, get the frag count of the other player by
+    viewing the LMP from a different player. (So you don't have to
+    ask them how many frags they had...)
+
+Q : Will one version of LMP work under another version of Doom?
+
+A : That's a tough question. There are several factors that determine
+    whether one LMP will work under another version of Doom or not.
+    Changes to various parts of the map, enhancements to the Doom engine
+    are the main reasons some LMP get out of synch very quickly under
+    a different version of Doom.
+
+    In general, Deathmatch LMPs recorded with -nomonster have very high
+    chance of playing back correctly under another version, where as
+    few 1.1 or 1.2 single player LMPs (older LMP format) played back
+    correctly under 1.9 (new LMP format).
+
+    Some of my favorite 1.2 LMPs that worked under Doom 1.9 are
+    rocket.lmp, domino.lmp, etc. (From the LMP collector's edition)
+    And all of my Doom II 1.6 Deathmatch LMPs worked under 1.9.
+
+Q : Why can't I change the LMP version for my 1.1 or 1.2 LMPs?
+
+A : LMP file with version prior to 1.4 use a different format and
+    does not contain version number information, as well as some other
+    information kept with the newer LMP format. When you display info
+    about 1.1 or 1.2 LMPs, blank entry indicates information that
+    are not kept with the older LMP file.
+
+    To playback the older LMP file, use the -convert option to convert it
+    to the newer format first.
+
+Q : Does LmpUtil support Heretic LMPs?
+
+A : Heretic 1.0 uses the older LMP format like doom 1.2. LmpUtil makes no
+    attempt to distinguish Heretic LMPs. It will simply display them as
+    Doom 1.2 LMPs. However, you need to pass the -heretic parameter to
+    LmpUtil or else the display of LMP's Duration will not be correct.
+    You also need the -heretic parameter if you are modifying the lmp
+    using any of LmpUtil's parameters.
+
+Q : I heard something about wildcards support for LmpUtil?
+
+A : LmpUtil can now processing multiple LMPs for -ver and -viewer
+    parameter. Simply use standard DOS wildcards in place of the LmpFile.
+
+    Let's say if you want to set all the LMP version to 1.9 of all the
+    LMP files in your current directlry, simply do:
+
+    lmputil -ver 1.9 *.lmp
+
+    Any invalid file specified will be ignored and an error message will be
+    printed indicating the type of error. Ignored files are not modified.
+
+Q : What is a game tic? How do I use it with -cut and -wait?
+
+A : You simply need to remember that 35 gametics = 1 second. Thus, if you
+    want to add 10 seconds of idle time to your LMP, simply do:
+
+    lmputil -wait 350 source.lmp target.lmp
+
+    Or, if you want to remove the first 321 seconds of the LMP, do:
+
+    lmputil -cut 1 11235 source.lmp target.lmp
+
+    because 11235 = 321 x 35.
+
+Q : Why doesn't -convert support wildcards?
+
+A : -convert requires a source.lmp and a target.lmp, so it doesn't make
+    much sense supporting wildcards when specifying source.lmp, because
+    lmputil won't know what the target file is for each of the matching
+    source file.
+
+    If you are using 4dos or Ndos, you can easily setup an alias that
+    converts all lmps in the current directory, I use the following :
+
+    convert lmputil /convert %1 %temp\~.lmp %+ *move %temp\~.lmp %1 /q
+    conall for %f in (*.lmp) convert %f
+
+    If you are not using 4dos, then GET IT.
+
+Q : What hints do you have for using the -cut parameter?
+
+A : The -cut was intended to delete a section of LMP, say the first
+    3 minutes in which you died 10 times before you successfully beat
+    the level. Instead of quit to DOS and start the recording again
+    every time you die, you can just press space bar to revive, and
+    continue the recording until you succeeded. Then remove the first
+    xxx seconds of LMP and only keep what's left.
+
+    Whenever you die during recording of a demo, press the space bar to
+    revive yourself. Then, stay idle for at least 10 seconds before you
+    begin to move. Look at your timer when you have revived. A good
+    estimate might be 2 seconds after you pressed spacebar.
+
+Q : I did what you said, I was able to remove the section I wanted.
+    I can tell because the new lmp started by me holding that pistol.
+    It played ok for a while, but then the player goes nuts and died!!
+
+A : Ok, I am just going to give it away, -cut doesn't work all the time.
+    Even if you were able to precisely remove the section you wanted.
+    In fact, it doesn't work at all when I tried it.
+
+    I guess the explanation is that there's some randomness to some aspect
+    of Doom. Those random variable starts with the same seed when you run
+    Doom from DOS, and changes on the fly depends on the player's movement
+    and possibly some other factors.
+
+    Put in simple terms, monster behavior are different each time you press
+    space bar and replay the level. Thus, in theory, if you simply delete
+    the first xxx seconds of the LMP, the LMP will never play back correctly.
+    But don't take my words for it, try it yourself.
+
+    I decided to leave the -cut in the program so you can do some other
+    things. Like remove the last 30 minutes of the LMP and so on..
+
+Q : What exactly does the -wait do, do I need to use it?
+
+A : -wait simply adds some extra waiting time at the end of the LMP, makes
+    it a little longer. It is intended to give you more time to look
+    at the score should the LMP ended too quickly.
+
+Q : LmpUtil says my LMP are missing bytes, what does it mean? what do i do?
+
+A : Normally, a LMP should contain complete gametics. However, you may end
+    up with LMPs that contains broken gametics, if the game end unexpectly,
+    like someone picked up the phone while you were recording a deathmatch,
+    or if Doom simply ran out of Demo space (-maxdemo).
+
+    You can safely igore the warning. To fill in the empty byte(s), use
+    "lmputil -wait 1 old new". This will create a new LMP and fills in any
+    missing bytes.
+
+Q : I have a LMP file "xxx" that doesn't have the .lmp extension, but when
+    I type in "lmputil xxx" it says "xxx.lmp" file not found!!
+
+A : Well, by default, if the file specification doesn't contain a period,
+    then LmpUtil automatically inserts the ".lmp" extension for you.
+
+    To use a LMP file that doesn't have any extension, put a period after
+    the file, such as in
+
+    lmputil mylmp.
+
+Q : So, does the -rp (remove pause) option really work?
+
+A : Well, it works very well in deathmatch LMPs recorded with the -nomonster
+    flag. In fact, all the deathmatch LMPs I've tested worked, even if it
+    has savegame commands inside the pause.
+
+    However, when monsters are present, some LMPs don't work. This is because
+    the pause length does affect monster behavior. When the pause length is
+    shortened, some monsters behave differently. This is probably why the
+    pause is recorded in the LMP in the first place.
+
+Q : Why can't the -rp option work on multiple files like the -viewer and
+    why do I have to specify a Out.LMP for -rp?
+
+A : When I initially coded LmpUtil, I did put multiple file support in -rp.
+    However, in testing it under pure DOS mode, (that is, no windows or os/2
+    loaded), the program opens the same file twice!
+
+    The reason is because when LmpUtil renames the new file to the old
+    filename, the findnext() library routine used to find the next match file
+    in the directory, will return the new file LmpUtil just created and
+    renamed.
+
+    Another reason is because the modified LMP won't always playback
+    correctly, so you have a chance to test it.
+
+Raymond Chi
+chiry@cory.EECS.Berkeley.EDU
+01-12-95

@@ -1,0 +1,233 @@
+                        Doom LMP Utility System
+                        Version 2.30, 01-12-95
+                      Copyright 1996, Raymond Chi
+                          All Rights Reserved
+
+
+========
+Overview
+========
+
+- Display detailed information about Doom/Doom2/Heretic LMPs.
+- Set LMP file version so it works with different version of the game.
+- Change the recording player for Doom/Doom2 multi-player LMPs.
+- Convert 1.0 - 1.2 LMP to the new LMP format used with Doom 1.4 - 1.9.
+- Remove a particular section of the LMP based on seconds or gametics.
+- Append some idle tics at the end of LMP so you can see the score longer.
+- Chop some gametics from the end of file.
+- Remove all pauses in the LMP, that actually works!
+- LMP file modified or created will retain it's original file date & time.
+
+============
+Installation
+============
+
+1) Make a directory and copy all lmputil files to it.
+2) add the directory to your path statement in autoexec.bat
+
+If you are using 4dos/Ndos, than create an alias that points to
+lmputil.exe instead of add the directory to your path.
+
+==========
+What's New
+==========
+
+The RemovePause command is implemented. I was rather disappointed by the way
+other utility removes pauses in the LMP. Some program keeps the PauseStart
+gametic with the pause removed, and remove the PauseEnd gametic completely,
+while others did the other way around. It didn't work for a lot of LMPs.
+
+They also get confused if there are more than 1 pauses during a particular
+gametics, which certainly is possible and does occur in multiplayer LMPs.
+The result is the LMP get's completely out of sync during playback. Some
+program would also leave a unbalanced pause in the LMP, and have trouble
+with LMPs that contains incomplete gametics, which happens if Doom run out
+of demo memory.
+
+LmpUtil handles all of the above situations correctly. Rest assured, that if
+a LMP doesn't playback correctly after LmpUtil removes the pause, then it's
+simply not possible to remove the pauses without affecting the game. Read
+the LmpUtil.FAQ for more information about the -rp command.
+
+============
+Sample Usage
+============
+
+To display information about a LMP, simply type :
+
+-> lmputil lmpfile
+
+Change the recording player to the next available player :
+
+-> lmputil -viewer lmpfile
+
+Change the LMP file version to 1.9 :
+
+-> lmputil -ver 1.9 lmpfile
+
+You can combine -viewer and -ver. For example :
+
+-> lmputil lmpfile -ver 1.7 -viewer
+
+will set the LMP version to 1.7, and change the recording player.
+
+Since LmpUtil v2.0, wildcards support is added for -ver and -viewer. Say you
+want to convert all the LMPs in your current directory to 1.9, the command
+to do it is :
+
+-> lmputil -ver 1.9 *.lmp
+
+To convert a 1.1 or 1.2 LMP to the newer LMP format, type :
+
+-> lmputil -convert source target <optional version>
+
+The source and target must not be the same file. Although the program tries
+to detect if the 2 files are the same, it will fail if you deliberately
+tries to fool it. And in that case, will corrucpt the source file.  If
+version is not specified, the target file will be 1.9.
+
+Although the order of parameter doesn't matter, i.e., you can specify the
+lmpfile either before or after the -viewer, there must be a version number
+follow -ver; a source, a target, and a optional version after -convert.
+
+So you cannot, for example, do :
+
+-> lmputil -viewer -ver lmpfile 1.6
+
+because a lmp version is expected after -ver.
+
+To add 100 seconds of waiting time at the end of your LMP, do :
+
+-> lmputil -sec -wait 100 source.lmp target.lmp
+
+To remove the first 10 minutes of LMP, do :
+
+-> lmputil -cut 1 21000 source.lmp target.lmp
+
+the 21000 represents 10 minutes, just remember that 35 gametics is 1 second.
+
+The program expect time to be specified in gametics, not seconds, unless the
+-sec parameter is present. To convert from time to gametics, do:
+
+1) convert the time to seconds
+2) multiply the seconds by 35.
+
+You can use either - or / as the parameter indicator. All of the above
+examples can be done with / instead of -. So you can do, for example,
+
+-> lmputil /ver 1.6 lmpfile -viewer
+
+If -convert, -cut, -wait, -chop, & -rp is specified, anything after the
+required parameter(s) will be ignored. So if you need to use you use
+-heretic and/or -sec, use it before the -cut.
+
+You can safely omit the .lmp extension in almost all cases and the program
+will find the right file.
+
+=============
+Sample Output
+=============
+
+Here's an output of a LMP recorded with Doom 1.666 :
+
+f:\>lmputil jayalanw
+LMP file      : jayalanw.lmp
+Version       : 1.9
+Skill Level   : 2, Hey, not too rough
+Episode       : 1, Hell on Earth / Knee-Deep in the Dead
+Map           : 5, The Waste Tunnels / Phobos Lab
+Play Mode     : DeathMatch 2.0
+-respawn      : No
+-fast         : No
+-nomonsters   : Yes
+Recorded by   : Indigo
+Active Player : Green, Indigo
+Game Tics     : 106443
+Duration      : 00:50:41
+
+Here's an output of a 1.2 Lmp :
+
+c:\test\hall>lmputil showdown
+LMP file      : showdown.lmp
+LMP Version   :
+Skill Level   : 4, Ultra-Violence
+Episode       : 2, The Shores of Hell
+Map           : 9, Fortress of Mystery
+Play Mode     :
+-respawn      :
+-fast         :
+-nomonsters   :
+Recorded by   :
+Active Player : Green
+Game Tick     : 8078
+Duration      : 00:03:51
+
+Here's the output when wildcards are used :
+
+f:\test>lmputil *.lmp /ver 1.9
+þ LEVEL19.LMP : 1.7 ¯ 1.9 [done]
+þ LEVEL20.LMP : 1.7 ¯ 1.9 [done]
+þ LEVEL21.LMP : 1.7 ¯ 1.9 [done]
+þ LEVEL22.LMP : 1.7 ¯ 1.9 [done]
+þ LEVEL23.LMP : 1.7 ¯ 1.9 [done]
+þ LEVEL24.LMP : 1.7 ¯ 1.9 [done]
+þ LEVEL25.LMP : 1.7 ¯ 1.9 [done]
+þ LEVEL26.LMP : 1.7 ¯ 1.9 [done]
+þ LEVEL27.LMP : 1.7 ¯ 1.9 [done]
+     9 file(s) processed, 0 file(s) skipped.
+
+Here's the output of a -rp command.
+
+d:\test>lmputil -rp 4pe1m5 xxx
+þ "4pe1m5.lmp" ¯ "xxx.lmp" : 
+       PS at tic 75982, PE at tic 76258, 275 tics removed.
+       PS at tic 76409, PE at tic 76604, 194 tics removed.
+       PS at tic 76991, PE at tic 77038, 46 tics removed.
+       PS at tic 77041
+           Balanced PE-PS at tic 77076, tic copied.
+        PE at tic 77101, 58 tics removed.
+       PS at tic 77118, PE at tic 77132, 13 tics removed.
+       PS at tic 77147, PE at tic 77164, 16 tics removed.
+       PS at tic 77180, PE at tic 77193, 12 tics removed.
+       PS at tic 77199, PE at tic 77213, 13 tics removed.
+       Balanced PS-PE at tic 77234.
+       PS at tic 77258, PE at tic 77281, 22 tics removed.
+       PS at tic 77317, PE at tic 77335, 17 tics removed.
+   Total : 10 pause(s) modified, 00:00:20 removed.
+
+===========
+Other Notes
+===========
+
+This program is free of charge and there is no registration fee.  However,
+If you like the program and found it useful, send me an e-mail.
+
+You may distribute this program as long as it is unmodified and in it's
+original form. Selling, lending, and leasing this software is not permitted.
+
+This is the first program I released into the public, I would appreciate
+any feedbacks.
+
+=======
+Credits
+=======
+
+Of course, credit must go to id software for such an excellent game,
+and Uwe Girlich for the unofficial Doom LMP spec 1.20.
+
+===========
+Legal Stuff
+===========
+
+THIS SOFTWARE AND MANUAL ARE SUPPLIED "AS IS". THE AUTHOR HEREBY
+DISCLAIMS ALL WARRANTIES RELATING TO THIS SOFTWARE AND ITS
+DOCUMENTATION FILE, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED
+TO DAMAGE TO HARDWARE, SOFTWARE AND/OR DATA FROM USE OF THIS
+PRODUCT. IN NO EVENT WILL THE AUTHOR OF THIS SOFTWARE BE LIABLE
+TO YOU OR ANY OTHER PARTY FOR ANY DAMAGES. YOUR USE OF THIS
+SOFTWARE INDICATES THAT YOU HAVE READ AND AGREE TO THESE AND
+OTHER TERMS INCLUDED IN THIS DOCUMENTATION FILE.
+
+Raymond Chi
+chiry@cory.EECS.Berkeley.EDU
+01-12-96

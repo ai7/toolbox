@@ -1,0 +1,93 @@
+                  Doom LMP Utility Revision History
+                 Current Length of Source: 1205 lines
+
+v2.30 01/12/96 (released to ftp.cdrom.com)
+- -rp option to correctly remove (shorten) all pauses in the game.
+  works correctly with multiple pauses in the same gametic and
+  savegame during a PS-PE.
+- Compiled with Borland C++ 4.5 instead of Turbo C++ 3.0.
+  80386 instruction with maximum optimization for speed.
+
+v2.20 07/05/95 (released to ftp.cdrom.com)
+- Heretic skill, episode, and level names used for -heretic.
+- Minor adjustments in the LMP display format.
+- Check for free disk space before writing new file.
+- -sec option to specify in seconds instead of game tics.
+
+v2.11 05/27/95 (internal)
+- Correct level names used for 4th episode of Doom.
+
+v2.10 05/22/95 (released to ftp.cdrom.com)
+- -chop command implemented to remove gametics from end of LMP.
+- -viewer now supports a optional player # to set player directly.
+- The .lmp extension can now be omited in all cases.
+- Can now display info for multiple LMPs.
+- Support for the 4th episode of Doom.
+- The -cut command removed from help screen, but still implemented.
+- filename handler expanded from 79 to 254 chars.
+
+v2.01 04/13/95 (released to ftp.cdrom.com)
+- Check for incorrect filesize improved to issue a warning only.
+- copy_tics() modified to handle incomplete gametics.
+- -wait parameter now fills a gametic's missing byte, if any.
+
+v2.00 03/24/95 (released to ftp.cdrom.com)
+- Wildcard file specification supported for /ver and /viewer.
+- Section of the LMP can now be removed based on gametics.
+- Some wait tics can be added to the LMP so one can see the score longer.
+- LMP file's original date & time stamp are restored for modify & copy.
+- "Single" play mode is displayed if coop and # player = 1.
+- Improved IO routine for /convert, block copy method used.
+- Faster IO routine to obtain the LMP file's size, fstat().
+- Return code to the OS is more organized. (1, 2, or 3)
+- Error message now contains the byte offset that is invalid.
+- Some very basic graphic chars used to enhance screen display.
+
+v1.51 02/23/95 (internal)
+- the '->' is now displayed in red color if -viewer and -ver is used.
+- intro/help screen modified a little, again.
+
+v1.50 02/18/95 (released to ftp.cdrom.com)
+- Used conditional compilation between dos & os/2.
+- support for both - and / as the indicator for parameters.
+- parameters for various action changed from single char to word.
+- default LMP ver for /convert is now 1.9
+
+v1.44 12/19/94 (released to alt.binaries.doom)
+- Improved and simplified file IO routine, no more reopens.
+- Minor bug in error message about LmpVer fixed.
+- Debug info not put into OBJ file when compile, 3k less exe.
+- Documentation rewritten, and hopefully, improved.
+- Segment fault when passing filenames longer than 80 chars fixed.
+- Modified so will compile under gcc/2 for os/2, and unix gcc.
+- Optimized not to use math library functions. (wasn't necessary)
+
+v1.43 12/06/94 (released to alt.binaries.doom)
+- Compiled with floating point emulation, ooops.
+
+v1.42 12/03/94 (internal)
+- Episode and level description added.
+- Simple check to see if LMP is for Doom / Doom II.
+  Will not be able to tell for episode 1 & level < 10.
+
+v1.41 12/03/94 (released to ftp.orst.edu)
+- Added optional parameter for /T to specify target LMP version.
+- Simple check to make sure source and target are not the same for /T.
+
+v1.4 12/02/94 (internal)
+- Added support for 1.2 LMPs.
+- Added /T parameter to convert 1.2 LMP to 1.6 LMP.
+- Parameter handler completely rewritten based on Nachos.
+- Program structure modified to ease furture add-on
+
+v1.2 12/02/94 (internal)
+- Added /V parameter to set LMP file version from 1.4 to 1.9.
+
+v1.1 12/01/94 (internal)
+- Added /C parameter to change recording player from
+  the list of active players.
+
+v1.0 12/01/94 (internal)
+- First Release.
+- Simply displays LMP file information.
+- Supports only 1.4 or later LMP version.

@@ -1,0 +1,52 @@
+************************************************************************
+LMP Title (if any)      : Indigo Death, FragCity, etc.
+Filename                : xxxx.lmp
+LMP Version             : 1.9/1.8/1.7a/1.7/1.666/1.2
+Game                    : Doom2/Doom/Heretic/Hexen
+Pwad(s)                 : xxxx.wad
+Map Level(s)            : MAPxx/ExMy
+Skill                   : 1-5
+Character (Hexen)       : Fighter/Cleric/Mage
+Options                 : -fast, -respawn, etc.
+Multiplayer Mode        : DeathMatch/DeathMatch 2.0/Cooperative
+Number of Players       : 4
+Perspective             : Green/Indigo/Brown/Red
+Length                  : 00:00:00
+-timer                  : No/xx (1-99)
+
+Author                  : Your Name
+Email Address           : you@yoursystem.com
+Misc. Author Info       : A bit about yourself
+
+Description             : Describe the LMP's content
+
+Additional Credits to   : 
+************************************************************************
+
+* Player Information *
+
+Green  : Raymond Chi (wildgoose) - 486-50  - Mouse+Keyboard
+Indigo : name (nickname)         - system  - control
+Brown  : name (nickname)         - system  - control
+Red    : name (nickname)         - system  - control
+
+* DeathMatch Score *
+
+Map01:
+       | Green | Indigo | Brown |  Red  | TOTAL   
+-------------------------------------------------
+Green  |   04      32       33      18      79
+Indigo |   33      15       33      41      92
+Brown  |   21      20       08      22      55
+Red    |   21      22       23      06      60
+-------------------------------------------------
+TOTAL:     79      89       97      87     286
+
+
+* Where to get this LMP *
+
+FTP sites:
+
+BBS numbers:
+
+Other:
