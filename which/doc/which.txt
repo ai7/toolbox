@@ -1,0 +1,20 @@
+
+
+4NT/4DOS users
+--------------
+
+It is recommended you put the following block in 4start.btm
+file in your 4nt/4dos directory.
+
+iff "%_SHELL%" = "0" then
+  set __WHICH__=%temp%\which.tmp
+  echos Updating %__WHICH__% ...
+  iff exist %__WHICH__% then
+    *del /q %__WHICH__%
+  endiff
+  echo [ALIAS] > %__WHICH__%
+  alias >> %__WHICH__%
+  set __WHICH__=
+  echo  done.
+  echo.
+endiff

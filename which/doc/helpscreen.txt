@@ -1,0 +1,19 @@
+Which %s [WIN32, %s %s] (%s%s)
+(c) 1997-1998 by Raymond Chi, all rights reserved.\n
+Usage: %s [options] [file(s) ... ]\n
+Options:
+\t/h|?\t= Display this help screen.
+\t/iVAR\t= Use environment variable %%VAR instead of %%Path.
+\t/c\t= Search current directory only.
+\t/v\t= Display version information on files.
+\t/t\t= Display last modification date/time on files.
+\t/s\t= Display files size.
+\t/a\t= Search 4NT/4DOS alias only.
+\t/d|f\t= Disable/Force 4NT/4DOS mode.
+\t/w\t= Update alias file %s.
+\t/m\t= Display drive mapping information.
+\nBitFlags:
+\t* = Current directory.\t\tD = Duplicated entry.
+\tX = Directory doesn't exist.\tE = Empty entry.
+\tN = Network directory.\t\tS = Entry ends with whitespace.
+\n%s\n

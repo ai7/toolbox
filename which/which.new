@@ -1,0 +1,76 @@
+		    Which Utility Revision History
+			     Raymond Chi
+
+v2.30 (02/26/1998) [1204 lines]
+- will display the network sharename of a path in directory listing.
+- /m to output drive letter mapping similar to map.exe, only better.
+- drive mapping out with /m the volumns are aligned based on max len.
+
+v2.20 (02/03/1998) [969 lines]
+- random string section now offer tips as well as occasional jokes.
+- random str section size how stored in string table, not hard coded.
+- the undocumented, although mentioned in random str, option, /j.
+- help screen modified a tiny bit. got rid of [] and <>.
+- random message now incorporates the full username or login.
+- now date display works according to regional setting.
+- time display still hardcoded because a bug in library: always 12h format
+- if can't obtain date/time, # of space padding is dynamically set.
+
+v2.10 (01/30/1998) [904 lines]
+- code modified so both the unicode and mbcs version works correctly
+- all suitable strings dumped into string table
+- dir id width now dynamically adjust depending on # of dir in path
+- path array struct size now dynamically set based on # of dir in path
+- entry in path contain only whitespace skipped
+- S bit flag if entry in path ends with whitespace
+- E bit flag if entry is empty, SE if entry contain only whitespace
+- date/time output based on current local instead of hardcoded
+- number of files (parameters) can search is not hardcoded anymore.
+
+v2.01 (01/23/1998) [815 lines]
+- this revision is mostly about speed optimization
+- which.tmp is written only if it does not exist
+- /w parameter to force rewrite of the which.tmp file
+- without rewriting which.tmp, alias search speeded up considerably.
+
+v2.00 (01/22/1998)
+- major code revision, lots of features added
+- counter and bitflag displayed for each entry in path, or env var
+- help screen revised to contain extra parameter information
+- /i to use other env var instead of the default path
+- current dir not inserted if env var is not path
+- /v displays version information, if any, on matching files
+- /t displays date/time information on matching files
+- /f and /d parameter to force enable/disable 4NT alias search
+- search order fixed, for each dir in path, for each possible ext.
+- runs correctly on non-English, DBCS OS such as Japanese NT.
+- /c to search only current directory. useful sometimes.
+- /s to display file size.
+- delay current dir search if path contain . in 4NT mode only.
+- 4nt alias search fully implemented with my own wildcard matching routine
+- alias only searched if 4nt is shell and searching %path.
+- /a to search only alias, not effective if 4nt is not the shell.
+
+v1.04 (??/??/????)
+- some routines updated to better use of existing Win API.
+- dir struct defined but were not used in the code.
+
+v1.03 (07/02/1997)
+- run with no parameters will print out dirs in path, one per line
+- will report if directories in path doesn't exist.
+- run with ? or h parameter will display help screen, can use - or /.
+- any other parameter will enable a search of the specific file in path.
+- if path contains a ., then current dir is not searched first.
+- automatically append possible exe extension if none provided.
+- search order if no ext: for each possible ext, for each possible dir
+- duplicate and non exist dir not displayed, and skipped in search.
+- random string displayed if help requested.
+
+v1.02 (??/??/????)
+- no info
+
+v1.01 (??/??/????)
+- no info
+
+v1.00 (??/??/????)
+- no info

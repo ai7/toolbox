@@ -1,0 +1,193 @@
+//Microsoft Developer Studio generated resource script.
+//
+#include "resource.h"
+
+#define APSTUDIO_READONLY_SYMBOLS
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 2 resource.
+//
+#include "afxres.h"
+
+/////////////////////////////////////////////////////////////////////////////
+#undef APSTUDIO_READONLY_SYMBOLS
+
+/////////////////////////////////////////////////////////////////////////////
+// English (U.S.) resources
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
+#ifdef _WIN32
+LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
+#pragma code_page(1252)
+#endif //_WIN32
+
+#ifdef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// TEXTINCLUDE
+//
+
+1 TEXTINCLUDE DISCARDABLE 
+BEGIN
+    "resource.h\0"
+END
+
+2 TEXTINCLUDE DISCARDABLE 
+BEGIN
+    "#include ""afxres.h""\r\n"
+    "\0"
+END
+
+3 TEXTINCLUDE DISCARDABLE 
+BEGIN
+    "\r\n"
+    "\0"
+END
+
+#endif    // APSTUDIO_INVOKED
+
+
+#ifndef _MAC
+/////////////////////////////////////////////////////////////////////////////
+//
+// Version
+//
+
+VS_VERSION_INFO VERSIONINFO
+ FILEVERSION 2,3,0,1
+ PRODUCTVERSION 2,3,0,1
+ FILEFLAGSMASK 0x3fL
+#ifdef _DEBUG
+ FILEFLAGS 0x1L
+#else
+ FILEFLAGS 0x0L
+#endif
+ FILEOS 0x40004L
+ FILETYPE 0x1L
+ FILESUBTYPE 0x0L
+BEGIN
+    BLOCK "StringFileInfo"
+    BEGIN
+        BLOCK "040904b0"
+        BEGIN
+            VALUE "Comments", "Which utility by Raymond Chi\0"
+            VALUE "CompanyName", "Mosaix, Inc.\0"
+            VALUE "FileDescription", "which\0"
+            VALUE "FileVersion", "2, 3, 0, 1\0"
+            VALUE "InternalName", "which\0"
+            VALUE "LegalCopyright", "Copyright © 1998\0"
+            VALUE "OriginalFilename", "which.exe\0"
+            VALUE "ProductName", "Which Utility\0"
+            VALUE "ProductVersion", "2, 3, 0, 1\0"
+        END
+    END
+    BLOCK "VarFileInfo"
+    BEGIN
+        VALUE "Translation", 0x409, 1200
+    END
+END
+
+#endif    // !_MAC
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// String Table
+//
+
+STRINGTABLE DISCARDABLE 
+BEGIN
+    IDS_ARG_MISSING         "Argument missing for parameter: `%s'"
+    IDS_DUP_ENV             "Environment variable already set to `%s': `%s'"
+    IDS_INVALID_PARM        "Invalid parameter: `%s'"
+    IDS_BAD_CWD             "%s: _getcwd() error.\n"
+    IDS_HELP                "Which %s [WIN32, %s %s] (%s%s)\n(c) 1997-1998 by Raymond Chi, all rights reserved.\n\nUsage: %s [options] [file(s) ... ]\n\nOptions:\n\t/h|?\t= Display this help screen.\n\t/iVAR\t= Use environment variable %%VAR instead of %%Path.\n\t/c\t= Search current directory only.\n\t/v\t= Display version information on files.\n\t/t\t= Display last modification date/time on files.\n\t/s\t= Display files size.\n\t/a\t= Search 4NT/4DOS alias only.\n\t/d|f\t= Disable/Force 4NT/4DOS mode.\n\t/w\t= Update alias file %s.\n\t/m\t= Display drive mapping information.\n\nBitFlags:\n\t* = Current directory.\t\tD = Duplicated entry.\n\tX = Directory doesn't exist.\tE = Empty entry.\n\tN = Network directory.\t\tS = Entry ends with whitespace.\n\n%s\n"
+    IDS_NOTFOUND_ALIAS      "%s not found in alias list.\n"
+    IDS_NOTFOUND1           "%s not found in %%%s.\n"
+    IDS_NOTFOUND2           "%s{.com|.exe|.btm|.bat|.cmd} not found in %%%s.\n"
+    IDS_NOTFOUND3           "%s{.com|.exe|.bat|.cmd} not found in %%%s.\n"
+    IDS_NOT_IN_ENV          "%s: not in environment: `%s'\n"
+    IDS_FAIL_GETVER1        " [VerQueryValue() failed]"
+    IDS_FAIL_GETVER2        " [GetFileVersionInfo() failed]"
+    IDS_ALIAS_MATCH         "%-*s : aliased to `%s'\n"
+    IDS_NOTFOUND4           "%s not found in %s.\n"
+    IDS_NOTFOUND5           "%s{.com|.exe|.btm|.bat|.cmd} not found in %s.\n"
+END
+
+STRINGTABLE DISCARDABLE 
+BEGIN
+    IDS_RAND1               "Questions/comments to raychi@mosaix.com."
+    IDS_RAND2               "Me think its time you read the manual."
+    IDS_RAND3               "I bet you don't know what workflow is."
+    IDS_RAND4               "Cool people will use Which."
+    IDS_RAND5               "Am I a cool Which or what?"
+    IDS_RAND6               "And you thought I'd run out of strings!"
+    IDS_RAND7               "Why not send a postcard to raychi@mosaix.com!"
+    IDS_RAND8               "Complaints, I don't wanta hear it!"
+    IDS_RAND9               "Me think your PATH is too long!"
+    IDS_RAND10              "Me think your PATH is too short!"
+    IDS_RAND11              "I bet you don't know what PATH is."
+    IDS_RAND12              "Bored? Why not try `which * /v /t' and see for yourself."
+    IDS_RAND13              "You can use Which to find any file in your path."
+    IDS_RAND14              "I am sick of your search!"
+    IDS_RAND15              "Tip #1: Options can begin with either / or -."
+    IDS_RAND16              "Tip #2: Wildcards (*, ?) in filenames are supported, try it!"
+END
+
+STRINGTABLE DISCARDABLE 
+BEGIN
+    IDS_RAND17              "Tip #3: Options and filenames can occur in any order!"
+    IDS_RAND18              "Tip #4: Searching for files without extension? End it with a . (period)."
+    IDS_RAND19              "Tip #5: You do not have to type standard executable extensions."
+    IDS_RAND20              "Tip #6: You can enter more than one filename, try it!"
+    IDS_RAND21              "Tip #7: undocumented option, /J to list my jokes!"
+    IDS_RAND22              "I may give you a tip, just keep trying!"
+    IDS_RAND23              "Never underestimate the power of this Which!"
+    IDS_RAND24              "You will never become a true Jedi unless you use Which!"
+    IDS_RAND25              "$1,000,000 donation to the author is greatly appreciated!"
+    IDS_RAND26              "Computer, initiate the self-destruct sequence, authorization Janeway Pi-110."
+    IDS_RAND27              "You've been in front of the computer for too long, go take a break!"
+    IDS_RAND28              "You will all be assimulated, resistence is futile!"
+    IDS_RAND29              "This computer will self-destruct in 5 seconds."
+    IDS_RAND30              "Your harddrive has just been formatted. Hope you had a backup."
+    IDS_RAND31              "%s: ""I can't believe how I ever lived without Which!"""
+    IDS_RAND32              "%s: ""This is the single best program I've ever used!"""
+END
+
+STRINGTABLE DISCARDABLE 
+BEGIN
+    IDS_RAND_SIZE           "32"
+END
+
+STRINGTABLE DISCARDABLE 
+BEGIN
+    IDS_NOTFOUND6           "%s{.com|.exe|.bat|.cmd} not found in %s.\n"
+    IDS_USER                "Someone"
+END
+
+STRINGTABLE DISCARDABLE 
+BEGIN
+    IDS_REMOVABLE           "Removable"
+    IDS_FIXED               "Local Disk"
+    IDS_REMOTE              "Network Drive"
+    IDS_CDROM               "CD-ROM Disc"
+    IDS_RAM                 "RAM Disk"
+    IDS_NO_ROOT_DIR         "No Root Dir"
+    IDS_UNKNOWN             "Unknown"
+END
+
+#endif    // English (U.S.) resources
+/////////////////////////////////////////////////////////////////////////////
+
+
+
+#ifndef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 3 resource.
+//
+
+
+/////////////////////////////////////////////////////////////////////////////
+#endif    // not APSTUDIO_INVOKED
+
