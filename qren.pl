@@ -57,7 +57,7 @@ my $operation;
 
 my $usage =
     (
-     "Q-Rename 6.33 [Perl, 2010-10-26]\n" .
+     "Q-Rename 7.00 [Perl, 2011-03-14]\n" .
      "(c) 2002-2010 by Raymond Chi, all rights reserved.\n\n" .
      "Usage: $argv0 <options> <files...>\n\n" .
      "<Options>\n\n" .
@@ -69,6 +69,9 @@ my $usage =
      "    -y         re-process based on exif/file time [-r]\n" .
      "    -d<date>   manual date if exif/file time < 1995/03 [-r]\n" .
      "  -t           Touch files based on timestamp in filename\n" .
+     "\n" .
+     "  -v           Rename PCM-M10 voice recording files from\n" .
+     "                 YYMMDD_NN.mp3 to YYYYMMDD_HHMMSS_NN[_tag].ext\n" .
      "\n" .
      "  -k           Rename PictureCD files from DDD_NNN.ext to\n" .
      "                 <roll>_NNNN_<date>.jpg [needs -x and -d]\n" .
@@ -145,6 +148,9 @@ for my $i (@options) {
         $parm_pcd_n = &verify_roll($1);
     } elsif ($i =~ /^d(.*)$/i) { # -d, date
         $parm_pcd_d = &verify_date($1);
+
+    } elsif ($i =~ /^v$/i) {     # -k, (6) pcm-m10 voice recording
+        $parm_mode = 6;
 
     } elsif ($i =~ /^n$/i) {
         $parm_simulate = 1;      # simulate mode
@@ -226,6 +232,17 @@ SWITCH: {
         }
         last SWITCH;
     }
+
+    # pcm-m10 files
+    if ($parm_mode == 6) {
+        $operation = "renamed";
+        $parm_exiftime = 0;   # force exif mode off
+        for my $f (@files) {
+            &rename_pcmm10_voice($f);
+        }
+        last SWITCH;
+    }
+
 }
 
 # print statistics
@@ -390,7 +407,7 @@ sub rename_file
 
         # matches already renamed file, needs to handle with caution
         # safety check, do nothing if offset, tag, or force not specified
-        if ($parm_offset == 0 && (!defined $parm_tag) && 
+        if ($parm_offset == 0 && (!defined $parm_tag) &&
             !$parm_rename_force && length($2) == 4) {
             print "requires <offset>, <tag>, -y, or seq not N{4}\n";
             $skipped++;
@@ -473,6 +490,7 @@ sub rename_file
     print "\n";
     return;
 }
+
 
 ######################################################################
 
@@ -979,6 +997,88 @@ sub max_string
     return $max;
 }
 
+
+######################################################################
+
+# renames the input file to the name
+# YYYYMMDD_HHMMSS_NNN_tag.ext name
+sub rename_pcmm10_voice
+{
+    my ($filename) = @_;
+
+    # removes any begin and trailing blanks
+    $filename =~ s/^\s+//;
+    $filename =~ s/\s+$//;
+
+    printf("%-*s => ", $max_filename, $filename);
+
+    # print offset information if specified
+    printf("[%+ds] ", $parm_offset) if ($parm_offset != 0);
+
+    # target filename
+    my $newname;
+    my $newtime;
+    my $reprocess_offset = 0;
+
+    # matches YYMMDD_NN.mp3
+    if ($filename =~ /^(\d{6})_(\d{2})(\..*)$/) {
+
+        # If files are in original digital camera name format
+        my $seq = $2;
+        my $ext = $3;
+        my $tag = ""; # assign default value
+
+        # force sequence length to be the last 4 digits
+        # $seq = substr($seq, -4) if (length($seq) > 4);
+
+        $tag = $parm_tag if (defined $parm_tag);
+        ($newname, $newtime) = &generate_new_filename($filename, $seq, $ext, $tag);
+        return if (! defined $newname || $newname eq "");
+
+    } else {
+        print "filename not in expected format!\n";
+        $skipped++;
+        return;
+    }
+
+    print "$newname";
+    printf(" [%+ds]", $reprocess_offset) if ($reprocess_offset != 0);
+
+    # prompts the user
+    if ($parm_prompt) {
+        my $char = &promptUser(" (y/n/r)? ", "[ynr]");
+        if ($char =~ /n/i) {
+            $skipped++;
+            goto finish;
+        } elsif ($char =~ /r/i) {
+            $parm_prompt = 0;
+        }
+    }
+
+    if (! $parm_simulate) {
+        # make sure the target does not exist because rename will kill it
+        # not losing file is of utmost importance
+        if (-f $newname) {
+            print " [file exist]";
+            $skipped++;
+        } else {
+            if (! rename($filename, $newname)) {
+                print " [rename failed]";
+                $failed++;
+            } else {
+                $success++;
+                print " [done]";
+            }
+        }
+    }
+
+  finish:
+
+    print "\n";
+    return;
+}
+
+
 ######################################################################
 #
 # Change History
@@ -1004,5 +1104,8 @@ sub max_string
 #
 # 6.33 (10/26/2010)
 #   - force 4 chars works for already processed files
+#
+# 7.00 (03/14/2011)
+#   - support -v for rename pcm-m10 files
 #
 ######################################################################
