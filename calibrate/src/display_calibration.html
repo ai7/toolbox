@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<!-- Raymond's Display Calibration Page <raychi74@yahoo.com>-->
+<html>
+
+<body>
+
+<!--
+<button type="button" onclick="changeBackground('black')">Black</button>
+<button type="button" onclick="changeBackground('white')">White</button>
+<p>
+<button type="button" onclick="toggleColor(1, 0, 0)">Red</button>
+<button type="button" onclick="toggleColor(0, 1, 0)">Green</button>
+<button type="button" onclick="toggleColor(0, 0, 1)">Blue</button>
+<p>
+<button type="button" onclick="setLevel(0)">0%</button><br>
+<button type="button" onclick="setLevel(10)">10%</button><br>
+<button type="button" onclick="setLevel(20)">20%</button><br>
+<button type="button" onclick="setLevel(30)">30%</button><br>
+<button type="button" onclick="setLevel(40)">40%</button><br>
+<button type="button" onclick="setLevel(50)">50%</button><br>
+<button type="button" onclick="setLevel(60)">60%</button><br>
+<button type="button" onclick="setLevel(70)">70%</button><br>
+<button type="button" onclick="setLevel(80)">80%</button><br>
+<button type="button" onclick="setLevel(90)">90%</button><br>
+<button type="button" onclick="setLevel(100)">100%</button><br>
+-->
+
+<script>
+
+// global variables for painting
+var g_red = 1;
+var g_green = 1;
+var g_blue = 1;
+var g_level = 100;
+
+function writeDisplayInfo(color) {
+   var width = screen.width;
+   var height = screen.height;
+   var depth = screen.colorDepth;
+   var rText = width + ' x ' + height;
+   var dText = ' [ ' + depth + ' bpp ]';
+   document.getElementById("footer").innerHTML = color + '<br>' + rText + dText;
+}
+
+function changeBackground(color) {
+   document.body.style.background = color;
+   writeDisplayInfo(color);
+}
+
+function getColor(r, g, b, level) 
+{
+   if (r) {
+      r = level + '%';
+   } else {
+      r = '0%'
+   }
+   if (g) {
+      g = level + '%';
+   } else {
+      g = '0%'
+   }
+   if (b) {
+      b = level + '%';
+   } else {
+      b = '0%'
+   }
+   // want: rgb(90%, 90%, 90%)
+   return "rgb(" + r + ", " + g + ", " + b + ")";
+}
+
+function toggleColor(r, g, b)
+{
+   if (r) {
+      g_red = g_red ? 0: 1;
+   }
+   if (g) {
+      g_green = g_green ? 0: 1;
+   }
+   if (b) {
+      g_blue = g_blue ? 0: 1;
+   }
+   setNewColor();
+}
+
+function setLevel(level) 
+{
+   g_level = level;
+   setNewColor();
+}
+
+function setNewColor()
+{
+   color = getColor(g_red, g_green, g_blue, g_level);
+   changeBackground(color);
+}
+
+function doc_keyUp(e) {
+   switch (e.keyCode) {
+      case 48: // 0
+         setLevel(0);
+	 break;
+      case 49: // 1
+         setLevel(10);
+	 break;
+      case 50: // 2
+         setLevel(20);
+	 break;
+      case 51: // 3
+         setLevel(30);
+	 break;
+      case 52: // 4
+         setLevel(40);
+	 break;
+      case 53: // 5
+         setLevel(50);
+	 break;
+      case 54: // 6
+         setLevel(60);
+	 break;
+      case 55: // 7
+         setLevel(70);
+	 break;
+      case 56: // 8
+         setLevel(80);
+	 break;
+      case 57: // 9
+         setLevel(90);
+	 break;
+      case 65: // a
+         setLevel(100);
+	 break;
+      case 82: // r
+         toggleColor(1, 0, 0);
+	 break;
+      case 71: // g
+         toggleColor(0, 1, 0);
+	 break;
+      case 66: // b
+         toggleColor(0, 0, 1);
+	 break;
+      case 32: // space
+      case 39: // right arrow
+         g_level = (g_level + 10) % 110;
+         setNewColor();
+   break;
+      case 37: // left arrow
+         if (g_level == 0) {
+            g_level = 100;
+         } else {
+            g_level = (g_level - 10) % 110;
+         }
+         setNewColor();
+	     break;
+   }
+}
+
+// register the handler
+document.addEventListener('keyup', doc_keyUp, false);
+
+</script>
+
+<div style="position: relative">
+    <p id="footer" style="position: fixed; bottom: 0; width:100%; text-align: center"></p>
+</div>
+
+</body>
+</html> 
