@@ -49,7 +49,7 @@ sub rename_picturecd1
 
     # prompts the user
     if ($Args::parm_prompt) {
-        my $char = &Util::promptUser(" (y/n/r)? ", "[ynr]");
+        my $char = Util::promptUser(" (y/n/r)? ", "[ynr]");
         if ($char =~ /n/i) {
             $qren::skipped++;
             goto finish;
@@ -127,7 +127,7 @@ sub rename_picturecd2
 
     # prompts the user
     if ($Args::parm_prompt) {
-        my $char = &Util::promptUser(" (y/n/r)? ", "[ynr]");
+        my $char = Util::promptUser(" (y/n/r)? ", "[ynr]");
         if ($char =~ /n/i) {
             $qren::skipped++;
             goto finish;
@@ -143,6 +143,96 @@ sub rename_picturecd2
         } else {
             $qren::success++;
             print " [done]";
+        }
+    }
+
+  finish:
+
+    print "\n";
+    return;
+}
+
+
+# renames the input file from Scan-YYMMDD-NNNN.ext to
+# RRR_NN_YYYYMMDD[_tag].ext name
+sub rename_scanned
+{
+    my ($filename) = @_;
+
+    # removes any begin and trailing blanks
+    $filename =~ s/^\s+//;
+    $filename =~ s/\s+$//;
+
+    printf("%-*s => ", $qren::max_filename, $filename);
+
+    # target filename
+    my $newname;
+
+    # handles this first as standard rename matches this too
+    if ($filename =~ /$qren::g_pat_scan/) {
+
+        # extract data from the pattern
+        my ($prefix, $scandate, $seq1, $ext) = ($1, $2, $3, $4);
+
+        my $roll_num = sprintf("%.4d", $Args::parm_pcd_n);
+        my $seq = sprintf("%.3d", $seq1);
+
+        my $tag = "";
+        my ($exif_time_string, $gtag) = Util::extract_exiftime($filename);
+        if (!defined $Args::parm_tag && $gtag) {
+            # tag is not specified on the command line, use the auto
+            # generated tag name based on the exif Model field.
+            $tag = "_$gtag";
+        }
+
+        $newname = "$roll_num\_$seq\_$Args::parm_pcd_d$tag$ext";
+
+    } else {
+        print "filename not in expected format!\n";
+        $qren::skipped++;
+        return;
+    }
+
+    # return if can't generate filename
+    if (! defined $newname || $newname eq "") {
+        print "failed to generate new filename!\n";
+        $qren::failed++;
+        return;
+    }
+    # skip if file is already in target name
+    if ($filename eq $newname) {
+        print "already in target name!\n";
+        $qren::skipped++;
+        return;
+    }
+
+    print "$newname";
+
+    # prompts the user
+    if ($Args::parm_prompt) {
+        my $char = Util::promptUser(" (y/n/r)? ", "[ynr]");
+        if ($char =~ /n/i) {
+            $qren::skipped++;
+            goto finish;
+        } elsif ($char =~ /r/i) {
+            $Args::parm_prompt = 0;
+        }
+    }
+
+    if (! $Args::parm_simulate) {
+        # make sure the target does not exist because rename will kill it
+        # not losing file is of utmost importance
+        if (-f $newname) {
+            print " [file exist]";
+            $qren::skipped++;
+        } else {
+            if (! rename($filename, $newname)) {
+                print " [rename failed]";
+                $qren::failed++;
+            } else {
+                $qren::success++;
+                print " [done]";
+            }
         }
     }
 

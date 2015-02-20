@@ -3,12 +3,37 @@
 
 package Util;
 
+use v5.10;
 use strict;
 use diagnostics;
+
+# disable experimental warning on 5.18 and higher
+no if ($] >= 5.018), 'warnings' => 'experimental';
 
 use Time::Local;
 use Term::ReadKey;
 use Image::ExifTool;
+
+
+# hash of Model -> tags for auto tag generation. some are not needed
+# due to intelligent auto processing.
+my %tag_lookup = (
+    "SCH-I535", "galaxys3",
+    "Canon PowerShot SD1200 IS", "sd1200",
+    "COOLPIX L12", "L12",
+    "FinePix XP70 XP71 XP75", "xp70",
+    "iPhone 6 Plus", "iphone6p",
+    "Canon EOS DIGITAL REBEL XTi", "rebel_xti",
+#    "NIKON D90", "d90",
+#    "NIKON D70", "d70",
+#    "DMC-GF1", "gf1",
+#    "iPhone 4", "iphone4",
+#    "Canon PowerShot S90", "s90",
+#    "Canon PowerShot SD500", "sd500",
+);
+
+# value that should be removed from exif Model field to generate tag
+my @tag_trim = ("NIKON", "Canon", "PowerShot", "DMC-", "COOLPIX");
 
 
 ######################################################################
@@ -40,17 +65,12 @@ sub verify_roll
 sub verify_offset
 {
     my ($offset) = @_;
-    my $hour;
-    my $min;
-    my $sec;
     my $offset_sec = 0;
     # start with an optional -, and followed by 1 to 4 digits
     if ($offset =~ /^([-]?)(\d{1,}):(\d{1,2}):(\d{1,2})$/) {
-        $hour = $2;
-        $min = $3;
-        $sec = $4;
+        my ($hour, $min, $sec) = ($2, $3, $4);
         $offset_sec = $hour * 3600 + $min * 60 + $sec;
-        if ("$1" eq "-") {
+        if ($1 eq "-") {
             $offset_sec *= -1;
         }
     } else {
@@ -61,17 +81,13 @@ sub verify_offset
 }
 
 
-# verifies the offset, returns the number of SECONDS
+# verifies the tag, returns _tag
 sub verify_tag
 {
     my ($tag) = @_;
     # contains an alpha numeric sequence
     if ($tag =~ /^(\w*)$/) {
-        if (defined $1 && $1 ne "") {
-            return "_$tag";
-        } else {
-            return "";
-        }
+        return ($1) ? "_$tag" : "";
     } else {
         print "Error: tag must be alpha-numeric - `$tag\'\n";
         exit;
@@ -87,23 +103,14 @@ sub verify_tag
 sub convert_timestamp_file
 {
     my ($string) = @_;
-    if ($string =~ /^(\d{4})(\d{2})(\d{2})_(\d{2})(\d{2})(\d{2})$/) {
+    # handles both _ or - as divider
+    if ($string =~ /^(\d{4})(\d{2})(\d{2})[_-](\d{2})(\d{2})(\d{2})$/) {
         # get the proper fields
-        my $year = $1;
-        my $mon = $2;
-        my $day = $3;
-        my $hour = $4;
-        my $min = $5;
-        my $sec = $6;
+        my ($year, $mon, $day, $hour, $min, $sec) = ($1, $2, $3, $4, $5, $6);
         # convert from time to seconds since epoch date
         # http://perldoc.perl.org/Time/Local.html
         # works with actual YYYY format (for year > 999)
-        return timelocal($sec,
-                         $min,
-                         $hour,
-                         $day,
-                         $mon - 1,
-                         $year);
+        return timelocal($sec, $min, $hour, $day, $mon - 1, $year);
     } else {
         print "timestamp not in expected format! - $string\n";
         exit;
@@ -119,21 +126,11 @@ sub convert_timestamp_exif
     # this handles a timezone notion after the time! from canon I think
     if ($string =~ /^(\d{4}):(\d{2}):(\d{2}) (\d{2}):(\d{2}):(\d{2})(.*)$/) {
         # get the proper fields
-        my $year = $1;
-        my $mon = $2;
-        my $day = $3;
-        my $hour = $4;
-        my $min = $5;
-        my $sec = $6;
+        my ($year, $mon, $day, $hour, $min, $sec) = ($1, $2, $3, $4, $5, $6);
         # convert from time to seconds since epoch date
         # http://perldoc.perl.org/Time/Local.html
         # works with actual YYYY format (for year > 999)
-        return timelocal($sec,
-                         $min,
-                         $hour,
-                         $day,
-                         $mon - 1,
-                         $year);
+        return timelocal($sec, $min, $hour, $day, $mon - 1, $year);
     } else {
         print "exif timestamp not in expected format! - $string\n";
         exit;
@@ -145,17 +142,47 @@ sub convert_timestamp_exif
 sub extract_make
 {
     my ($info) = @_;
-
     my $model = 0;
-    if (defined $info->{Make}) {
-        if    ($info->{Make} =~ /nikon/i)      { $model = 1; }
-        elsif ($info->{Make} =~ /canon/i)      { $model = 2; }
-        elsif ($info->{Make} =~ /sony/i)       { $model = 3; }
-        elsif ($info->{Make} =~ /panasonic/i)  { $model = 4; }
-        elsif ($info->{Make} =~ /apple/i)      { $model = 5; }
+
+    if ($info->{Make}) {
+        given ($info->{Make}) {
+            when (/nikon/i)      { $model = 1; }
+            when (/canon/i)      { $model = 2; }
+            when (/sony/i)       { $model = 3; }
+            when (/panasonic/i)  { $model = 4; }
+            when (/apple/i)      { $model = 5; }
+        }
     }
 
     return $model;
+}
+
+
+# figure out the tag to use based on the model field in the exif
+# tag is a short concise id representing the camera
+sub auto_generate_tag
+{
+    my ($info) = @_;
+    my $model = $info->{Model};
+    my $tag;
+
+    if (defined $model) {
+        # do we have a predefined value for this Model?
+        # if not, will trying to construct a tag automatically
+        $tag = $tag_lookup{$model};
+        if (!defined $tag) {
+            # first remove branding strings
+            for my $remove_str (@tag_trim) {
+                $model =~ s/$remove_str//i;
+            }
+            # remove whitespace from string
+            $model =~ s/\s+//;
+            # lowercase all chars
+            $tag = lc($model);
+        }
+    }
+
+    return $tag;
 }
 
 
@@ -180,22 +207,27 @@ sub extract_exiftime
     # Do not use FileModifyDate as this must extract the exif date, if any
     my $datetime = $info->{DateTimeOriginal};
     my $make = extract_make($info);
+    # generate an automatic tag based on exif info
+    my $tag = auto_generate_tag($info);
+    if (!defined $tag) {
+        print "no {Model} ";
+    }
 
     if (!defined $datetime && $make == 5) {
         $datetime = $info->{CreateDate};
     }
 
-    return $datetime;
+    return ($datetime, $tag);
 }
 
 
 # figure out the max string length from the list of strings
 sub max_string
 {
-    my (@strings) = @_;
+    my ($strings_ref) = @_;
     my $max = 0;
 
-    foreach my $str (@strings) {
+    for my $str (@$strings_ref) {
         my $key_len = length($str);
         $max = $key_len if ($key_len > $max);
     }

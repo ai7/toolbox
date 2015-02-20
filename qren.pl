@@ -6,7 +6,7 @@
 # It is useful to convert files from digital camera to a more
 # meaningful name for archiving purposes
 
-# (c) 2002-2011 Raymond Chi <raymondc@cal.berkeley.edu>
+# (c) 2002-2015 Raymond Chi <raymondc@cal.berkeley.edu>
 
 # requires Term/ReadKey package. To install
 # 1) ppm3-bin.exe
@@ -14,43 +14,73 @@
 
 package qren;
 
+use v5.10;
 use strict;
 use diagnostics;
 
-use Switch;
+# disable experimental warning on 5.18 and higher
+no if ($] >= 5.018), 'warnings' => 'experimental';
+
 use POSIX qw(strftime);
 
 use Term::ReadKey;
 use Time::Local;
 use Image::ExifTool;
+use File::Spec;
 
 use Util;
 use Args;
 use Picture_cd;
 
-# module vars
+# module vars visible to other pm files
 
 our $success = 0;  # statistics
 our $failed = 0;
 our $skipped = 0;
 our $max_filename = 0;  # maximum filename length
 
-my $video_ext    = "(mts)|(m2ts)|(mkv)|(avi)|(mov)|(mp3)|(wav)|(flac)"; # trigger video info for -i
-my $exif_off_ext = "(mp3)|(wav)|(flac)";             # turn exif off
+# trigger video info for -i
+my $video_ext     = '(mts)|(m2ts)|(mkv)|(avi)|(mov)|(mp3)|(wav)|(flac)';
 
+# image files
+my $image_ext     = '(jpg)|(png)';
 
-# begin main script
+# turn exif off
+my $exif_off_ext  = '(mp3)|(wav)|(flac)';
+
+# pattern for renaming standard digital camera files
+my $g_pat_rename  = '^([a-zA-Z_]*)(\d+)([a-zA-Z]*)(\..*)$';
+
+# pattern for samsung galaxy s3 photos, 20120930_094102[(x)].jpg
+my $g_pat_s3      = '^(\d{8}[_]\d{6})(\((\d+)\))?(\..*)$';
+
+# sony pcm-m10 files, YYMMDD_NN.mp3
+my $g_pat_voice   = '^(\d{6})_(\d{2})(\..*)$';
+
+# pattern for already renamed files (using either _ or - as divider)
+my $g_pat_already = '(\d{8}[_-]\d{6})[_-](\d+)([_-]([\w \+-]+))?(\..*)$';
+
+# lg phone: 0422071811a.jpg MMDDYYHHMMx (up to +10 pics in one min)
+my $g_pat_lgphone = '^(\d{2})(\d{2})(\d{2})(\d{2})(\d{2})([a-j])?(\..*)$';
+
+# already renamed files to process into subdirs
+my $g_pat_subdirs = '^(\d{4})(\d{2})(\d{2})_\d{6}_(\d+)(_([\w\+-]+))?(\..*)$';
+
+# vuescan generated scan files
+our $g_pat_scan   = '^([a-zA-Z]*)-(\d{6})-(\d+)(\..*)$';
 
 ######################################################################
+
+# begin main script
 
 my $min_valid_time = timelocal(0, 0, 0, 1, 2, 1995);  # Kodak DCS460
 my $operation;
 
-&Args::process_args();                            # process command line arguments
+Args::process_args();                            # process command line arguments
 
-$max_filename = &Util::max_string(@Args::files);
+$max_filename = Util::max_string(\@Args::files);
 
-&execute_commands();                              # do the actual work
+execute_commands();                              # do the actual work
 
 # print statistics
 print "\t$success file(s) $operation, $failed file(s) failed, $skipped file(s) skipped\n";
@@ -63,26 +93,26 @@ exit;
 # do the required work (display info, rename, touch, etc..)
 sub execute_commands
 {
-    switch ($Args::parm_mode) {
-        case 1 { # info
+    given ($Args::parm_mode) {
+        when (1) { # info
             $operation = "processed";
             for my $f (@Args::files) {
-                &display_exif_info($f);
+                display_exif_info($f);
             }
         }
-        case 2 { # rename
+        when (2) { # rename
             $operation = "renamed";
             for my $f (@Args::files) {
-                &rename_file($f);
+                rename_file($f);
             }
         }
-        case 3 { # touch
+        when (3) { # touch
             $operation = "touched";
             for my $f (@Args::files) {
-                &touch_file($f);
+                touch_file($f);
             }
         }
-        case 4 { # pictureCD1
+        when (4) { # pictureCD1
             # verify roll and date specified for picturecd
             if ($Args::parm_pcd_n == 0) {
                 print "Error: roll number \"-x<XXXX>\" must be specified for -k!\n";
@@ -93,10 +123,10 @@ sub execute_commands
             }
             $operation = "renamed";
             for my $f (@Args::files) {
-                &Picture_cd::rename_picturecd1($f);
+                Picture_cd::rename_picturecd1($f);
             }
         }
-        case 5 { # pictureCD2
+        when (5) { # pictureCD2
             # verify roll or date specified for picturecd reprocess
             if ($Args::parm_pcd_n == 0 && $Args::parm_pcd_d eq "") {
                 print "Error: -x AND/OR -d must be specified for -a\n";
@@ -104,22 +134,40 @@ sub execute_commands
             }
             $operation = "renamed";
             for my $f (@Args::files) {
-                &Picture_cd::rename_picturecd2($f);
+                Picture_cd::rename_picturecd2($f);
             }
         }
-        case 6 { # clear exif orientation
+        when (6) { # clear exif orientation
             $operation = "processed";
             for my $f (@Args::files) {
-                &clear_exif_orientation($f);
+                clear_exif_orientation($f);
             }
         }
-        case 7 { # extract thumb image
+        when (7) { # extract thumb image
             $operation = "extracted";
             for my $f (@Args::files) {
-                &extract_thumb_image($f);
+                extract_thumb_image($f);
             }
         }
 
+        when (8) { # process files into subdirs
+            $operation = "processed";
+            process_into_folders(\@Args::files); # pass by ref
+        }
+
+        when (9) { # rename scan files
+            if ($Args::parm_pcd_n == 0) {
+                print "Error: roll number \"-x<XXX>\" must be specified for -q!\n";
+                exit;
+            } elsif ($Args::parm_pcd_d eq "") {
+                print "Error: date \"-d<YYYYMMDD>\" must be specified for -q\n";
+                exit;
+            }
+            $operation = "renamed";
+            for my $f (@Args::files) {
+                Picture_cd::rename_scanned($f);
+            }
+        }
 
     }
 }
@@ -140,18 +188,24 @@ sub generate_new_filename
 
     if ($use_exif) {
         # extract exif timestamp as 2006:09:21 16:23:32
-        my $exif_time_string = &Util::extract_exiftime($filename);
+        # also get the auto generated tag to use
+        my ($exif_time_string, $gtag) = Util::extract_exiftime($filename);
         if (! defined $exif_time_string) {
             print "no EXIF time! ";
             return;
         }
+        if (!defined $Args::parm_tag && $gtag) {
+            # tag is not specified on the command line, use the auto
+            # generated tag name based on the exif Model field.
+            $tag = "_$gtag";
+        }
         # convert timestamp to # of sec since epoch
-        my $exif_time = &Util::convert_timestamp_exif($exif_time_string);
-        $new_time = &check_min_time($exif_time, 1);
+        my $exif_time = Util::convert_timestamp_exif($exif_time_string);
+        $new_time = check_min_time($exif_time, 1);
     } else {
         # fstat[9] contains timestamp in seconds since 1970.
         my @fstat = stat($filename);
-        $new_time = &check_min_time($fstat[9], 0);
+        $new_time = check_min_time($fstat[9], 0);
     }
     return if (! defined $new_time);
 
@@ -179,7 +233,7 @@ sub check_min_time
             $skipped++;
             return;
         }
-        $new_time = &Util::convert_timestamp_file($Args::parm_pcd_d . "_000000");
+        $new_time = Util::convert_timestamp_file($Args::parm_pcd_d . "_000000");
     } else {
         # construct final timestamp string with offset if any
         $new_time = $file_time + $Args::parm_offset;
@@ -209,52 +263,75 @@ sub rename_file
     my $newtime;
     my $reprocess_offset = 0;
 
+    # handles this first as standard rename matches this too
+    if ($filename =~ /$g_pat_lgphone/) {
+
+        my ($month, $day, $year, $hour, $min) = ($1, $2, $3, $4, $5);
+
+        my $seq = 1; # default seq
+        if ($6) { # process extra 'a', 'b', etc after filename
+            $seq = ord($6) - ord('a') + 2;
+        }
+        my $ext = $7;
+        my $tag = ($Args::parm_tag) ? $Args::parm_tag : "";
+
+        # TODO: lg vx8300 bug!! 2011=01, 2012=02
+        # assumes won't be using this in 2017!
+        if ($year < 7) {
+            print "(Year $year->";
+            $year += 10;
+            print "$year) ";
+        }
+        $newname = sprintf("20%s%s%s_%s%s00_%.4d%s%s",
+                           $year, $month, $day, $hour, $min, $seq, $tag, $ext);
+
     # optional alpha, required digit, optional alpha, .ext
-    if ($filename =~ /^([a-zA-Z_]*)(\d+)([a-zA-Z]*)(\..*)$/) {
+    } elsif ($filename =~ /$g_pat_rename/) {
 
         # If files are in original digital camera name format
         my $seq = sprintf("%.4d", $2);  # set seq length to 4
         my $ext = $4;
-        my $tag = ""; # assign default value
+        my $tag = ($Args::parm_tag) ? $Args::parm_tag : "";
 
         # force sequence length to be the last 4 digits
         $seq = substr($seq, -4) if (length($seq) > 4);
 
-        $tag = $Args::parm_tag if (defined $Args::parm_tag);
-        ($newname, $newtime) = &generate_new_filename($filename, $seq, $ext,
+        ($newname, $newtime) = generate_new_filename($filename, $seq, $ext,
                                                       $tag, $Args::parm_exiftime);
 
-    } elsif ($filename =~ /^(\d{6})_(\d{2})(\..*)$/) {
+    } elsif ($filename =~ /$g_pat_voice/) {
 
         # this matches YYMMDD_NN.mp3, voice files from sony pcm-m10
         my $seq = $2; # sequence as is without expanding into 4 chars
         my $ext = $3;
-        my $tag = ""; # assign default value
+        my $tag = ($Args::parm_tag) ? $Args::parm_tag : "";
 
-        $tag = $Args::parm_tag if (defined $Args::parm_tag);
-        ($newname, $newtime) = &generate_new_filename($filename, $seq, $ext,
+        ($newname, $newtime) = generate_new_filename($filename, $seq, $ext,
                                                       $tag, $Args::parm_exiftime);
 
         # removed ^ in matching so 20d_20050101* files will match
-    } elsif ($filename =~ /(\d{8}_\d{6})_(\d+)(_(\w+))?(\..*)$/) {
+    } elsif ($filename =~ /$g_pat_already/) {
+
+        my $filename_time = Util::convert_timestamp_file($1);
+        # take seq as is, so shorter seq will be kept shorter
+        # for example, voice files
+        my $seq = $2;
+        my $ext = $5;
+        my $tag = $3; # out group
+
+        # force sequence length to be the last 4 digits if it is longer
+        $seq = substr($seq, -4)      if (length($seq) > 4);
+        # increase to 4 digits if image files and less than 4 digits
+        $seq = sprintf("%.4d", $seq) if (length($seq) < 4 && $ext =~ /^\.($image_ext)$/i);
 
         # matches already renamed file, needs to handle with caution
         # safety check, do nothing if offset, tag, or force not specified
         if ($Args::parm_offset == 0 && !defined $Args::parm_tag &&
-            !$Args::parm_rename_force && length($2) <= 4) {
-            print "requires <offset>, <tag>, -y, or seq > N{4}\n";
+            !$Args::parm_rename_force && length($2) == length($seq)) {
+            print "requires <offset>, <tag>, -y, or seq len change\n";
             $skipped++;
             return;
         }
-
-        my $filename_time = &Util::convert_timestamp_file($1);
-        # take seq as is, so shorter seq will be kept shorter
-        my $seq = $2;
-        my $ext = $5;
-        my $tag = $3; # inner group
-
-        # force sequence length to be the last 4 digits
-        $seq = substr($seq, -4) if (length($seq) > 4);
 
         # tag on parameter overrides filename tag, including ""
         if (defined $Args::parm_tag) {
@@ -270,8 +347,41 @@ sub rename_file
             $newname = "$timestamp\_$seq$tag$ext";
         } else {
             # -y is specified, need to reprocess based on exif or file timestamp
-            ($newname, $newtime) = &generate_new_filename($filename, $seq, $ext,
+            ($newname, $newtime) = generate_new_filename($filename, $seq, $ext,
                                                           $tag, $Args::parm_exiftime);
+            $reprocess_offset = $newtime - $filename_time if (defined $newtime);
+        }
+
+    } elsif ($filename =~ /$g_pat_s3/) {
+
+        # the s3 creates files with timestamp in its name, nice!!
+        my $filename_time = Util::convert_timestamp_file($1);
+        # usually s3 files have no sequence number in them. If
+        # take two pics within a second, a "(0)" is appended to
+        # the 2nd pic. So we take this seq number and add one, to
+        # have it start at 1.
+        my $seq = sprintf("%.4d", (defined $3) ? $3+1 : 0);
+        my $ext = $4;
+
+        # s3 files have no tags, so we either figure it out based on
+        # exif, or take whatever is specified in tag parameter.
+        my $tag;
+        if (defined $Args::parm_tag) {
+            $tag = $Args::parm_tag;
+        } else {
+            my ($exif_time_string, $gtag) = Util::extract_exiftime($filename);
+            $tag = ($gtag) ? "_$gtag" : "";
+        }
+
+        if (!$Args::parm_rename_force) {
+            # if -y is not specified, simply reprocess files using new offset/tag
+            # from timestamp embedded in the filename
+            my $timestamp = strftime("%Y%m%d_%H%M%S", localtime($filename_time + $Args::parm_offset));
+            $newname = "$timestamp\_$seq$tag$ext";
+        } else {
+            # -y is specified, need to reprocess based on exif or file timestamp
+            ($newname, $newtime) = generate_new_filename($filename, $seq, $ext,
+                                                         $tag, $Args::parm_exiftime);
             $reprocess_offset = $newtime - $filename_time if (defined $newtime);
         }
 
@@ -299,7 +409,7 @@ sub rename_file
 
     # prompts the user
     if ($Args::parm_prompt) {
-        my $char = &Util::promptUser(" (y/n/r)? ", "[ynr]");
+        my $char = Util::promptUser(" (y/n/r)? ", "[ynr]");
         if ($char =~ /n/i) {
             $skipped++;
             goto finish;
@@ -355,7 +465,7 @@ sub touch_file
 
     # the pattern here only recognizes ascii filenames
     if ($filename =~ /^(\d{8}_\d{6})_(.+)(\..*)$/) {
-        $new_time = &Util::convert_timestamp_file($1) + $Args::parm_offset;
+        $new_time = Util::convert_timestamp_file($1) + $Args::parm_offset;
     } else {
         print "filename not in expected format!\n";
         $skipped++;
@@ -366,7 +476,7 @@ sub touch_file
 
     # prompts the user
     if ($Args::parm_prompt) {
-        my $char = &Util::promptUser(" (y/n/r)? ", "[ynr]");
+        my $char = Util::promptUser(" (y/n/r)? ", "[ynr]");
         if ($char =~ /n/i) {
             $skipped++;
             goto finish;
@@ -376,7 +486,7 @@ sub touch_file
     }
 
     if (! $Args::parm_simulate) {
-        my $ret = &Util::my_touch($filename, $new_time);
+        my $ret = Util::my_touch($filename, $new_time);
         if ($ret == 1) {
             print " [touch failed]";
             $failed++;
@@ -415,22 +525,22 @@ sub display_exif_info
         #return;
     }
 
-    my $model = &Util::extract_make($info);
+    my $model = Util::extract_make($info);
 
     if (!$Args::parm_info) {
 
         my ($ext) = $filename =~ /\.(\w+)$/;
         if ($ext =~ /^($video_ext)$/i) {
-            &display_video_info_short($filename, $info, $model);
+            display_video_info_short($filename, $info, $model);
         } else {
-            &display_image_info_short($filename, $info, $model);
+            display_image_info_short($filename, $info, $model);
         }
 
     } else {
         my @key_names = keys %$info;
-        my $max_key = &Util::max_string(@key_names);
+        my $max_key = Util::max_string(\@key_names);
         # print data
-        foreach my $key (sort @key_names) {
+        for my $key (sort @key_names) {
             printf("%s: %*s: %s\n", $filename, $max_key, $key, $$info{$key});
         }
     }
@@ -482,10 +592,10 @@ sub display_image_info_short
     if ($datetime !~ /\?/ && $filename =~ /^(\d{8}_\d{6})_(\d+)(_(\w+))?(\..*)$/) {
         # calculate offset between timestamp embedded in the filename,
         # and the displayed exif/file timestamp, if file is already renamed
-        my $filename_time = &Util::convert_timestamp_file($1);
+        my $filename_time = Util::convert_timestamp_file($1);
         my $info_time;
         if ($Args::parm_exiftime) {
-            $info_time = &Util::convert_timestamp_exif($datetime);
+            $info_time = Util::convert_timestamp_exif($datetime);
         } else {
             $info_time = $filetime;
         }
@@ -524,7 +634,7 @@ sub display_image_info_short
     }
 
     # get the rotation setting
-    my $rotation = &get_orientation($info);
+    my $rotation = get_orientation($info);
     $output .= sprintf(", %3d\xf8", $rotation) if (defined $rotation);
     # $output .= sprintf(", %3dr", $rotation) if (defined $rotation);
 
@@ -534,7 +644,7 @@ sub display_image_info_short
 
     # get the thumbnail image size
     if (defined $info->{ThumbnailImage}) {
-        my $tsize = &get_thumbnail_size($info);
+        my $tsize = get_thumbnail_size($info);
         $output .= " [$tsize]" if (defined $tsize);
     }
 
@@ -553,22 +663,27 @@ sub display_image_info_short
 
     # get the focal length
     my $fl = $info->{FocalLength};
-    if (defined $fl && $fl =~ /^(\d+)/) {
+    if (defined $fl && $fl =~ /^([\d\.]+)/) {
         $fl = $1;
+        $fl =~ s/\.0$//; # remove trailing .0
     }
     $output .= ", $fl" . "mm" if (defined $fl);
 
     # get the the 35mm equivalent focal length
     my $fl35 = $info->{FocalLengthIn35mmFormat}; # nikon/panasonic
     if (defined $fl35) {
-        if ($fl35 =~ /^(\d+)/) {
+        if ($fl35 =~ /^([\d\.]+)/) {
             $fl35 = $1;     # extract out the digits in front, in case "41 mm"
         }
     } else {
         $fl35 = $info->{FocalLength35efl}; # canon
-        # 5.8mm (35mm equivalent: 35.2mm)
-        if (defined $fl35 && $fl35 =~ /equivalent:\s+(.+)mm\)$/) {
-            $fl35 = $1;
+        if (defined $fl35) {
+            # 5.8mm (35mm equivalent: 35.2mm)
+            if ($fl35 =~ /equivalent:\s+(.+)mm\)$/) {
+                $fl35 = $1;
+            } elsif ($fl35 =~ /^([\d\.]+)/) {
+                $fl35 = $1;     # extract out the digits in front, in case "41 mm"
+            }
         }
     }
     if (defined $fl35) {
@@ -617,10 +732,10 @@ sub display_video_info_short
     if ($datetime !~ /\?/ && $filename =~ /^(\d{8}_\d{6})_(\d+)(_(\w+))?(\..*)$/) {
         # calculate offset between timestamp embedded in the filename,
         # and the displayed exif/file timestamp, if file is already renamed
-        my $filename_time = &Util::convert_timestamp_file($1);
+        my $filename_time = Util::convert_timestamp_file($1);
         my $info_time;
         if ($Args::parm_exiftime) {
-            $info_time = &Util::convert_timestamp_exif($datetime);
+            $info_time = Util::convert_timestamp_exif($datetime);
         } else {
             $info_time = $filetime;
         }
@@ -667,7 +782,7 @@ sub display_video_info_short
     $output .= " [$duration]" if (defined $duration);
 
     # get the rotation setting
-    my $rotation = &get_orientation($info);
+    my $rotation = get_orientation($info);
     $output .= ", $rotation\xf8" if (defined $rotation);
 
     # get the audio/video type
@@ -731,7 +846,7 @@ sub clear_exif_orientation
     printf("%-*s => ", $max_filename, $filename);
 
     # get the current orientation
-    my $orientation = &get_orientation($info);
+    my $orientation = get_orientation($info);
     if (!defined $orientation) {
         printf("missing orientation setting");
         $skipped++;
@@ -751,11 +866,12 @@ sub clear_exif_orientation
     # process, make sure don't process on d90 files, for example
 
     # prompts the user if needed
-    if (! &Util::get_confirm()) {
+    if (! Util::get_confirm()) {
         $skipped++;
         goto finish;
     }
 
+    # http://www.sno.phy.queensu.ca/~phil/exiftool/ExifTool.html#SetNewValue
     $status = $exifTool->SetNewValue('Orientation#' => $Args::parm_clr_orien,
                                      EditOnly => 1);
     if ($status <= 0) {
@@ -817,7 +933,7 @@ sub extract_thumb_image
     }
 
     # prompts the user if needed
-    if (! &Util::get_confirm()) {
+    if (! Util::get_confirm()) {
         $skipped++;
         goto finish;
     }
@@ -849,55 +965,202 @@ sub get_thumbnail_size
 }
 
 
-######################################################################
-#
-# Change History
-#
-# 1.1 (?)
-#   - extracts sequence number from original filename, without them,
-#     the files are too hard to identify
-#
-# 6.0 (1/2007)
-#   - used EXIFTools perl library to read and parse exif time
-#   - more clean up
-#
-# 6.2 (2/5/2007)
-#   - general code clean up, moved blocks into subroutines
-#   - max filename length used in all messages
-#   - removed current directory check
-#   - moved check for file exist / directory in glob() block
-#
-# 6.3 (10/17/2007)
-#   - take Canon 40d "2007:10:06 10:52:15+08:00" type exif timestamp
-#
-# 6.31 (1/17/2008)
-#   - relaxed already generated filename matching rule
-#
-# 6.32 (7/8/2010)
-#   - force 4 chars for seq NNNN. GF1's NNN is too many digits
-#
-# 6.33 (10/26/2010)
-#   - force 4 chars works for already processed files
-#
-# 7.00 (03/18/2011)
-#   - support for rename pcm-m10 files YYMMDD_NN.mp3
-#   - split qren.pl into multiple modules for better organization!
-#   - fixed missing newline when exif failed to extract time
-#   - turn off exif time reading for mp3/wav/flac files
-#
-# 7.01 (04/19/2011)
-#   - updated display of 1-line info for image/video
-#   - tested with new exiftool that parses .mts!!
-#
-# 7.02 (05/09/2011)
-#   - display and clear rotation setting via -c
-#   - extract out embedded thumbnail into .thm via -b
-#   - tested/updated with iphone4 jpg/mov files
-#
-######################################################################
+# based on the filename, create a mapping of dirs (YYYY_MM_DD) to list
+# of files that will go into that directory
+sub get_subdirs_from_files
+{
+    my ($files_ref) = @_;
+
+    my %hashtable = ();
+
+    # don't need to test if file exist or not as Args does it
+    for my $f (@$files_ref) {
+        printf("%-*s => ", $max_filename, $f);
+        # see if file matches already renamed pattern
+        if ($f =~ /$g_pat_subdirs/) {
+            # construct folder name
+            my $folder = "$1_$2_$3";
+            if ($hashtable{$folder}) {
+                push($hashtable{$folder}, $f);
+            } else {
+                $hashtable{$folder} = [$f];
+            }
+            # kind of complicated, better way?
+            my $array_ref = $hashtable{$folder};
+            printf("%s (%d)\n", $folder, scalar(@$array_ref));
+        } else {
+            print "pattern does not match, skipped\n";
+            $skipped++;
+        }
+    }
+    print "\n";
+
+    return %hashtable;
+}
+
+
+# create the set of directories that the files will be moved to
+sub create_folders
+{
+    my ($folders_ref) = @_;
+
+    for my $dir (@$folders_ref) {
+
+        print "$dir =>";
+
+        if ($Args::parm_prompt) {
+            my $char = Util::promptUser(" (y/n/r)? ", "[ynr]");
+            if ($char =~ /n/i) {
+                $skipped++;
+                print "\n";
+                next;
+            } elsif ($char =~ /r/i) {
+                $Args::parm_prompt = 0;
+            }
+        }
+
+        if (! $Args::parm_simulate) {
+            if (! -d $dir) {
+                if (!mkdir($dir)) {
+                    print " [mkdir failed]";
+                    $failed++;
+                    # return instead of continue processing
+                    print "\n";
+                    return 0;
+                } else {
+                    print " [done]";
+                }
+            } else {
+                print " [already exist]";
+            }
+        }
+        print "\n";
+    }
+
+    return 1;
+}
+
+
+# move the files into their respective subdirectories
+sub move_files
+{
+    # key is dir name, value is list of files
+    my ($hashtable_ref) = @_;
+    my ($dir, $files_ref);
+
+    while ( ($dir, $files_ref) = each(%$hashtable_ref) ) { # for each dirs
+
+        for my $f (@$files_ref) { # for each target files in the dir
+
+	    # join path in platform independent way
+	    my $newname = File::Spec->join($dir, $f);
+
+            printf("%-*s -> %s =>", $max_filename, $f, $dir);
+
+            if ($Args::parm_prompt) {
+                my $char = Util::promptUser(" (y/n/r)? ", "[ynr]");
+                if ($char =~ /n/i) {
+                    $skipped++;
+                    print "\n";
+                    next;
+                } elsif ($char =~ /r/i) {
+                    $Args::parm_prompt = 0;
+                }
+            }
+
+            if (! $Args::parm_simulate) {
+                # make sure the target does not exist because rename will kill it
+                # not losing file is of utmost importance
+                if (-f $newname) {
+                    print " [file exist]";
+                    $skipped++;
+                } else {
+                    if (! rename($f, $newname)) {
+                        print " [rename failed]";
+                        $failed++;
+                    } else {
+                        $success++;
+                        print " [done]";
+                    }
+                }
+            }
+            print "\n";
+
+        }
+    }
+
+}
+
+
+# process digital camera files into unique date based sub directories
+sub process_into_folders
+{
+    my ($files_ref) = @_;
+
+    my %hashtable = get_subdirs_from_files($files_ref);
+
+    # now if hash table has 2 or more keys, continue
+    my @subdirs = sort keys %hashtable;
+    my $size = @subdirs;
+
+    # print the list of directories and number of files in them
+    if ($size > 0) {
+        print "$size dirs:\n";
+        for my $s (@subdirs) {
+            my $array_ref = $hashtable{$s};
+            printf("\t%s (%d)\n", $s, scalar(@$array_ref));
+        }
+        print "\n";
+    }
+
+    # if no dirs found, exit
+    if ($size < 1) {
+        print "$size dir, no actions needed.\n";
+        goto finish;
+    }
+
+    # if only one dir, ask to confirm
+    if ($size < 2) {
+        print "Only $size dir, continue";
+        my $char = Util::promptUser(" (y/n)? ", "[yn]");
+        print "\n";
+        if ($char =~ /n/i) {
+            goto finish;
+        }
+        print "\n";
+    }
+
+    # prompt to create folders
+    print "Create directories";
+    my $char = Util::promptUser(" (y/n)? ", "[yn]");
+    print "\n";
+    if ($char =~ /n/i) {
+        goto finish;
+    }
+    print "\n";
+
+    if (! create_folders(\@subdirs)) {
+        goto finish;
+    }
+
+    # prompt to move files
+    print "\nMove files";
+    $char = Util::promptUser(" (y/n)? ", "[yn]");
+    print "\n";
+    if ($char =~ /n/i) {
+        goto finish;
+    }
+    print "\n";
+
+    move_files(\%hashtable);
+
+  finish:
+
+    print "\n";
+    return;
+
+}
 
 # @ todo
 # * once default exiftool in repository reaches 7.5.2, can have duration, and can
 #   calculate correct .mts filename for gf1 video based on duration substraction.
-# * reset exif orientation flag
-# http://www.sno.phy.queensu.ca/~phil/exiftool/ExifTool.html#SetNewValue
