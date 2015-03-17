@@ -1,0 +1,8 @@
+/* display calibration css file */
+
+/* need to emulate the following
+<div style="position: relative">
+    <p id="footer" style="position: fixed; bottom: 0; width:100%; text-align: center"></p>
+</div>
+*/
+
