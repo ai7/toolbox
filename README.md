@@ -1,6 +1,6 @@
 # deltree
 
-Fastest way to delete large directory trees on Windows
+Fastest way to delete directories on Windows
 
 ## Overview
 
@@ -39,11 +39,18 @@ progress dialog will be displayed.
 
 ## DOS DELTREE
 
-Here are some screen grabs of deltree.exe on MS-DOS 6.22
+Here are some screenshots of the classic deltree.exe on MS-DOS 6.22
 
 ![deltree1](https://github.com/ai7/deltree/raw/master/images/dos-deltree1.png)
 
 ![deltree2](https://github.com/ai7/deltree/raw/master/images/dos-deltree2.png)
+
+## Build
+
+deltree can be compiled with MinGW-w64 on Windows.
+
+Simply run 'make' and the included makefile will build a deltree.exe
+in the build directory.
 
 ## Notes
 
