@@ -25,7 +25,18 @@ shell delete.
 ## Usage
 
 ```
-Usage: deltree <path> ...
+deltree v1.00 [Mar 23 2015, 14:22:42] (gcc 4.9.1)
+
+Usage: deltree [options] <path> ...
+
+Options:
+  -y    yes, suppresses prompting for confirmation
+  -s    silent, do not display any progress dialog
+  -n    do nothing, simulate the operation
+  -f    force, no prompting/silent (for rm compatibility)
+  -r    ignored (for rm compatibility)
+
+Delete directories and all the subdirectories and files in it.
 ```
 
 ```
