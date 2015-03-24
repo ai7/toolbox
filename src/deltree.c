@@ -5,12 +5,13 @@
 #include <errno.h>
 #include <io.h>
 #include <assert.h>
+#include <time.h>
 
 #include <windows.h>
 #include <conio.h>
 
 
-#define DELTREE_VER    "1.00"
+#define DELTREE_VER    "1.01"
 
 #ifndef FALSE
 #define FALSE          0
@@ -194,11 +195,14 @@ DeleteItem(const char *path,       // IN
            int i)                  // IN
 
 {
+   Bool rc = FALSE;
    int res;
    FILEOP_FLAGS fFlags = FOF_NOCONFIRMATION;
+   clock_t begin, end;
+   double timeSpent;
 
    if (!path || !path[0]) {
-      return FALSE;
+      return rc;
    }
 
    // double null terminate input path
@@ -206,7 +210,7 @@ DeleteItem(const char *path,       // IN
    char *removeDir = malloc(dirLength + 2);
    if (!removeDir) {
       fprintf(stderr, "malloc failed: %s\n", strerror(errno));
-      return FALSE;
+      return rc;
    }
    strcpy_s(removeDir, dirLength + 2, path);
    removeDir[dirLength + 1] = '\0';
@@ -222,21 +226,26 @@ DeleteItem(const char *path,       // IN
                             fFlags, FALSE, NULL, NULL};
 
    if (!args->simulate) {
+      begin = clock(); // save start time
       res = SHFileOperation(&fileOp);
+      end = clock();   // save end time
+      timeSpent = (double) (end - begin) / CLOCKS_PER_SEC;
       if (fileOp.fAnyOperationsAborted == TRUE) {
-         printf("[aborted]\n");
+         printf("[aborted] (%.3fs)\n", timeSpent);
       } else if (res != ERROR_SUCCESS) {
-         printf("[failed/%d]\n", res);
+         printf("[failed/%d] (%.3fs)\n", res, timeSpent);
       } else {
-         printf("[done]\n");
+         printf("[done] (%.3fs)\n", timeSpent);
+         rc = TRUE;
       }
    } else {
       printf("[simulate]\n");
+      rc = TRUE;
    }
 
    free(removeDir);
 
-   return TRUE;
+   return rc;
 }
 
 
@@ -255,7 +264,10 @@ main(int argc,
 {
    int i;
    int rc = 0;
+   int success = 0;
    AppInputs args = {0};
+   clock_t begin, end;
+   double timeSpent;
 
    // process the command line arguments and fill the args struct
    if (!ParseArgs(argc, argv, &args)) {
@@ -264,6 +276,7 @@ main(int argc,
    }
 
    // run deltree on any argument that's not an option/switch
+   begin = clock(); // save start time
    for (i = 0; i < args.delSize; i++) {
       const char *item = argv[args.delList[i]];
       // check if path exists
@@ -283,7 +296,14 @@ main(int argc,
          }
       }
       // now delete it
-      DeleteItem(item, &args, i+1);
+      if (DeleteItem(item, &args, i+1)) {
+         success++;
+      }
+   }
+   end = clock(); // save end
+   timeSpent = (double) (end - begin) / CLOCKS_PER_SEC;
+   if (args.delSize > 1) {
+      printf("\nTotal: %d item(s) deleted (%.3fs)\n", success, timeSpent);
    }
 
 exit:
