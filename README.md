@@ -25,7 +25,7 @@ shell delete.
 ## Usage
 
 ```
-deltree v1.00 [Mar 23 2015, 14:22:42] (gcc 4.9.1)
+deltree v1.01 [Mar 27 2015, 16:31:02] (gcc 4.9.1)
 
 Usage: deltree [options] <path> ...
 
@@ -41,8 +41,8 @@ Delete directories and all the subdirectories and files in it.
 
 ```
 c:\>deltree test
-Delete directory "test" and all its subdirectories? [yN] y
-Deleting test ... [done]
+Delete directory "test" and all its subdirectories? [yNrq] y
+[1/1] Deleting test ... [done] (0.073s)
 ```
 
 Similar to Explorer, if deletion will take more than a few seconds, a
@@ -63,6 +63,6 @@ deltree can be compiled with MinGW-w64 on Windows.
 Simply run 'make' and the included makefile will build a deltree.exe
 in the build directory.
 
-## Notes
+## Install
 
-Customization options will be added.
+Simply download and copy deltree.exe somewhere in your PATH.
