@@ -302,7 +302,8 @@ main(int argc,
    }
    end = clock(); // save end
    timeSpent = (double) (end - begin) / CLOCKS_PER_SEC;
-   if (args.delSize > 1) {
+   // output overall status if silent mode and > 1 items
+   if (args.delSize > 1 && args.noPrompt) {
       printf("\nTotal: %d item(s) deleted (%.3fs)\n", success, timeSpent);
    }
 
