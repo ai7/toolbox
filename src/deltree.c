@@ -124,7 +124,7 @@ ParseArgs(int argc,         // IN
                Usage(argv[0]);
                return FALSE;
             default:
-               fwprintf_s(stderr, L"%ws: invalid option -- '%c'\n",
+               fwprintf_s(stderr, L"%ws: invalid option -- '%wc'\n",
                           argv[0], argv[i][j]);
                return FALSE;
             }
@@ -160,7 +160,7 @@ PromptUser(const wchar_t *path)
 
    // prompt like classic DOS deltree
    wprintf_s(L"Delete directory \"%ws\" and all its subdirectories? [yNrq] ", path);
-   wchar_t x = _getch();
+   wchar_t x = _getwch();
    wprintf_s(L"%wc\n", x);
 
    switch (x) {
