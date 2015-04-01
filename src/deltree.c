@@ -11,7 +11,7 @@
 #include <conio.h>
 
 
-#define DELTREE_VER    "1.01"
+#define DELTREE_VER    L"1.0.2"
 
 #ifndef FALSE
 #define FALSE          0
@@ -42,18 +42,18 @@ typedef struct AppInputs_ {
  * @return None
  */
 void
-Usage(const char *argv0)  // IN
+Usage(const wchar_t *argv0)  // IN
 {
-   printf("deltree v%s [%s, %s] (gcc %s)\n\n"
-          "Usage: %s [options] <path> ...\n\n"
-          "Options:\n"
-          "  -y    yes, suppresses prompting for confirmation\n"
-          "  -s    silent, do not display any progress dialog\n"
-          "  -n    do nothing, simulate the operation\n"
-          "  -f    force, no prompting/silent (for rm compatibility)\n"
-          "  -r    ignored (for rm compatibility)\n"
-          "\nDelete directories and all the subdirectories and files in it.\n",
-          DELTREE_VER, __DATE__, __TIME__, __VERSION__, argv0);
+   wprintf_s(L"deltree v%ws [%hs, %hs] (gcc %hs)\n\n"
+             L"Usage: %ws [options] <path> ...\n\n"
+             L"Options:\n"
+             L"  -y    yes, suppresses prompting for confirmation\n"
+             L"  -s    silent, do not display any progress dialog\n"
+             L"  -n    do nothing, simulate the operation\n"
+             L"  -f    force, no prompting/silent (for rm compatibility)\n"
+             L"  -r    ignored (for rm compatibility)\n"
+             L"\nDelete directories and all the subdirectories and files in it.\n",
+             DELTREE_VER, __DATE__, __TIME__, __VERSION__, argv0);
 }
 
 
@@ -67,7 +67,7 @@ Usage(const char *argv0)  // IN
  */
 Bool
 ParseArgs(int argc,         // IN
-          char **argv,      // IN
+          wchar_t **argv,   // IN
           AppInputs *args)  // OUT
 {
    int i, j;   // index for looping argv and individual options
@@ -83,8 +83,8 @@ ParseArgs(int argc,         // IN
    // allocate memory for delete list
    args->delList = calloc(argc, sizeof(int));
    if (!args->delList) {
-      fprintf(stderr, "%s: calloc failed: %s\n",
-              argv[0], strerror(errno));
+      fwprintf_s(stderr, L"%ws: calloc failed: %ws\n",
+                 argv[0], strerror(errno));
       return FALSE;
    }
 
@@ -92,38 +92,38 @@ ParseArgs(int argc,         // IN
    // handle both - and / for options, and we want to support mixing
    // options and path in any order.
    for (i = 1; i < argc; i++) {
-      if (argv[i][0] == '-' || argv[i][0] == '/') {
+      if (argv[i][0] == L'-' || argv[i][0] == L'/') {
          // support multiple options in one segment
-         for (j = 1; argv[i][j] != '\0'; j++) {
+         for (j = 1; argv[i][j] != L'\0'; j++) {
             switch (argv[i][j]) {
-            case 'y':  // disable prompting
-            case 'Y':
+            case L'y':  // disable prompting
+            case L'Y':
                args->noPrompt = TRUE;
                break;
-            case 'f':  // force (no prompt/silent, for rm compatibility)
-            case 'F':
+            case L'f':  // force (no prompt/silent, for rm compatibility)
+            case L'F':
                args->noPrompt = TRUE;
                args->silent = TRUE;
                break;
-            case 's':
-            case 'S':
+            case L's':
+            case L'S':
                args->silent = TRUE;
                break;
-            case 'n':
-            case 'N':
+            case L'n':
+            case L'N':
                args->simulate = TRUE;
                break;
-            case 'r':  // ignored (for rm compatibility)
-            case 'R':
+            case L'r':  // ignored (for rm compatibility)
+            case L'R':
                break;
-            case 'h':
-            case 'H':
-            case '?':
+            case L'h':
+            case L'H':
+            case L'?':
                Usage(argv[0]);
                return FALSE;
             default:
-               fprintf(stderr, "%s: invalid option -- '%c'\n",
-                       argv[0], argv[i][j]);
+               fwprintf_s(stderr, L"%ws: invalid option -- '%c'\n",
+                          argv[0], argv[i][j]);
                return FALSE;
             }
          }
@@ -152,27 +152,27 @@ ParseArgs(int argc,         // IN
  * @return 0: no, 1: yes, 2: remaining, -1: quit
  */
 int
-PromptUser(const char *path)
+PromptUser(const wchar_t *path)
 {
    int rc = 0;
 
    // prompt like classic DOS deltree
-   printf("Delete directory \"%s\" and all its subdirectories? [yNrq] ", path);
-   char x = _getch();
-   printf("%c\n", x);
+   wprintf_s(L"Delete directory \"%ws\" and all its subdirectories? [yNrq] ", path);
+   wchar_t x = _getch();
+   wprintf_s(L"%c\n", x);
 
    switch (x) {
-   case 'y':
-   case 'Y':
+   case L'y':
+   case L'Y':
       rc = 1;
       break;
    case 3:   // ctrl-c
-   case 'q':
-   case 'Q':
+   case L'q':
+   case L'Q':
       rc = -1;
       break;
-   case 'r':
-   case 'R':
+   case L'r':
+   case L'R':
       rc = 2;
       break;
    }
@@ -190,7 +190,7 @@ PromptUser(const char *path)
  * @return TRUE on success, FALSE otherwise.
  */
 BOOL
-DeleteItem(const char *path,       // IN
+DeleteItem(const wchar_t *path,    // IN
            const AppInputs *args,  // IN
            int i)                  // IN
 
@@ -206,16 +206,16 @@ DeleteItem(const char *path,       // IN
    }
 
    // double null terminate input path
-   size_t dirLength = strlen(path);
-   char *removeDir = malloc(dirLength + 2);
+   size_t dirLength = wcslen(path);
+   wchar_t *removeDir = malloc(sizeof(wchar_t) * (dirLength + 2));
    if (!removeDir) {
-      fprintf(stderr, "malloc failed: %s\n", strerror(errno));
+      fwprintf_s(stderr, L"malloc failed: %ws\n", strerror(errno));
       return rc;
    }
-   strcpy_s(removeDir, dirLength + 2, path);
-   removeDir[dirLength + 1] = '\0';
+   wcscpy_s(removeDir, dirLength + 2, path);
+   removeDir[dirLength + 1] = L'\0';
 
-   printf("[%d/%d] Deleting %s ... ", i, args->delSize, path);
+   wprintf_s(L"[%d/%d] Deleting %ws ... ", i, args->delSize, path);
    fflush(stdout);
 
    // Populate the SHFILEOPSTRUCT and delete the folder
@@ -231,15 +231,15 @@ DeleteItem(const char *path,       // IN
       end = clock();   // save end time
       timeSpent = (double) (end - begin) / CLOCKS_PER_SEC;
       if (fileOp.fAnyOperationsAborted == TRUE) {
-         printf("[aborted] (%.3fs)\n", timeSpent);
+         wprintf_s(L"[aborted] (%.3fs)\n", timeSpent);
       } else if (res != ERROR_SUCCESS) {
-         printf("[failed/%d] (%.3fs)\n", res, timeSpent);
+         wprintf_s(L"[failed/%d] (%.3fs)\n", res, timeSpent);
       } else {
-         printf("[done] (%.3fs)\n", timeSpent);
+         wprintf_s(L"[done] (%.3fs)\n", timeSpent);
          rc = TRUE;
       }
    } else {
-      printf("[simulate]\n");
+      wprintf_s(L"[simulate]\n");
       rc = TRUE;
    }
 
@@ -258,9 +258,9 @@ DeleteItem(const char *path,       // IN
  * @return integer return code
  */
 int
-main(int argc,
-     char *argv[],
-     char *env[])
+wmain(int argc,
+      wchar_t *argv[],
+      wchar_t *env[])
 {
    int i;
    int rc = 0;
@@ -278,10 +278,10 @@ main(int argc,
    // run deltree on any argument that's not an option/switch
    begin = clock(); // save start time
    for (i = 0; i < args.delSize; i++) {
-      const char *item = argv[args.delList[i]];
+      const wchar_t *item = argv[args.delList[i]];
       // check if path exists
-      if (_access(item, 0) != 0) {
-         fprintf(stderr, "%s: %s\n", item, strerror(errno));
+      if (_waccess(item, 0) != 0) {
+         fwprintf_s(stderr, L"%ws: %ws\n", item, strerror(errno));
          continue;
       }
       // get confirmation if necessary
@@ -304,7 +304,7 @@ main(int argc,
    timeSpent = (double) (end - begin) / CLOCKS_PER_SEC;
    // output overall status if silent mode and > 1 items
    if (args.delSize > 1 && args.noPrompt) {
-      printf("\nTotal: %d item(s) deleted (%.3fs)\n", success, timeSpent);
+      wprintf_s(L"\nTotal: %d item(s) deleted (%.3fs)\n", success, timeSpent);
    }
 
 exit:

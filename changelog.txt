@@ -1,0 +1,10 @@
+                         deltree for Windows
+                              ChangeLog
+
+2015-04-01  Raymond Chi <raychi@gmail.com>
+
+  * compiled for unicode
+
+2015-03-27  Raymond Chi <raychi@gmail.com>
+
+  * first official release, v1.0.1

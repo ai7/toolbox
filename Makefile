@@ -32,12 +32,14 @@ $(BUILD_DIR)/$(MAIN_TARGET): $(OBJ)
 
 CC = gcc
 
+CC_OPTS = -D_UNICODE -DUNICODE
+
 ifeq ("$(TARGET)","debug")
-    CFLAGS   = -Wall -g $(addprefix -I,$(INCLUDE_DIRS))
-    LDFLAGS  =
+    CFLAGS   = -Wall -g $(addprefix -I,$(INCLUDE_DIRS)) $(CC_OPTS)
+    LDFLAGS  = -municode
 else
-    CFLAGS   = -Wall -O6 $(addprefix -I,$(INCLUDE_DIRS))
-    LDFLAGS  = -s
+    CFLAGS   = -Wall -O6 $(addprefix -I,$(INCLUDE_DIRS))  $(CC_OPTS)
+    LDFLAGS  = -s -municode
 endif
 
 LOADLIBES = $(addprefix -L,$(LIB_DIRS))
