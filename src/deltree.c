@@ -81,10 +81,12 @@ ParseArgs(int argc,         // IN
    }
 
    // allocate memory for delete list
-   args->delList = calloc(argc, sizeof(int));
+   args->delList = (int *) calloc(argc, sizeof(int));
    if (!args->delList) {
+      wchar_t buf[512];
+      _wcserror_s(buf, ARRAYSIZE(buf), errno);
       fwprintf_s(stderr, L"%ws: calloc failed: %ws\n",
-                 argv[0], strerror(errno));
+                 argv[0], buf);
       return FALSE;
    }
 
@@ -159,7 +161,7 @@ PromptUser(const wchar_t *path)
    // prompt like classic DOS deltree
    wprintf_s(L"Delete directory \"%ws\" and all its subdirectories? [yNrq] ", path);
    wchar_t x = _getch();
-   wprintf_s(L"%c\n", x);
+   wprintf_s(L"%wc\n", x);
 
    switch (x) {
    case L'y':
@@ -207,9 +209,11 @@ DeleteItem(const wchar_t *path,    // IN
 
    // double null terminate input path
    size_t dirLength = wcslen(path);
-   wchar_t *removeDir = malloc(sizeof(wchar_t) * (dirLength + 2));
+   wchar_t *removeDir = (wchar_t *) malloc(sizeof(wchar_t) * (dirLength + 2));
    if (!removeDir) {
-      fwprintf_s(stderr, L"malloc failed: %ws\n", strerror(errno));
+      wchar_t buf[512];
+      _wcserror_s(buf, ARRAYSIZE(buf), errno);
+      fwprintf_s(stderr, L"malloc failed: %ws\n", buf);
       return rc;
    }
    wcscpy_s(removeDir, dirLength + 2, path);
@@ -281,7 +285,9 @@ wmain(int argc,
       const wchar_t *item = argv[args.delList[i]];
       // check if path exists
       if (_waccess(item, 0) != 0) {
-         fwprintf_s(stderr, L"%ws: %ws\n", item, strerror(errno));
+	 wchar_t buf[512];
+	 _wcserror_s(buf, ARRAYSIZE(buf), errno);
+         fwprintf_s(stderr, L"%ws: %ws\n", item, buf);
          continue;
       }
       // get confirmation if necessary
