@@ -1,110 +1,124 @@
 // console_color.cpp
 //
-// Module that set console text color
+// Implementation for the ConsoleColor module.
 //
-
-#ifdef _WIN32
-#include <windows.h>
-#endif
 
 #include "console_color.h"
 
-#ifdef _WIN32
+namespace ConsoleColor {
+
+    // retain foreground bits, clear background bits
+    static const WORD fgMask ( FOREGROUND_BLUE      |
+                               FOREGROUND_GREEN     |
+                               FOREGROUND_RED       |
+                               FOREGROUND_INTENSITY );
+
+    // retain background bits, clear foreground bits
+    static const WORD bgMask ( BACKGROUND_BLUE      |
+                               BACKGROUND_GREEN     |
+                               BACKGROUND_RED       |
+                               BACKGROUND_INTENSITY );
 
 
-// constructor
-ConsoleColorWin::ConsoleColorWin()
-{
-    uint16_t color;
+    // constructor
+    ConsoleColor::ConsoleColor()
+    {
+        WORD color;
 
-    // get handle to console
-    hConsole_ = GetStdHandle(STD_OUTPUT_HANDLE);
+        // get handle to console
+        hConsole_ = GetStdHandle(STD_OUTPUT_HANDLE);
+
+        // save current console color
+        if (getCurrentColor(color)) {
+            initialColor_ = color;
+        } else {
+            // cmd.exe default: 0x07 (gray on black)
+            // powershell.exe default: 0x56 (yellow on magenta ?)
+            //                         [(236,237,240) on (1,36,86)]
+            initialColor_ = gray;
+        }
+        
+        curColor_ = initialColor_;
+    }
+
+
+    // destructor
+    ConsoleColor::~ConsoleColor()
+    {
+        // restore initial console color
+        setColor(initialColor_);
+    }
+
+
+    // return the current console color
+    bool
+    ConsoleColor::getCurrentColor(WORD &color)  // OUT
+    {
+        CONSOLE_SCREEN_BUFFER_INFO info;
+
+        if (!GetConsoleScreenBufferInfo(hConsole_, &info)) {
+            return false;
+        }
+        color = info.wAttributes;
+
+        return true;
+    }
+
+
+    // set console text to specified color (foreground + background)
+    bool
+    ConsoleColor::setColor(WORD color)  // IN
+    {
+        if (!SetConsoleTextAttribute(hConsole_, color)) {
+            return false;
+        }
+        curColor_ = color;
+    }
+
+
+    // set console text to the specified enum color, which can be a
+    // foreground or background color.
+    bool
+    ConsoleColor::setColor(Color color)  // IN
+    {
+        WORD c = curColor_;
+        if (color > white) {
+            // this is a background color, keep current foreground
+            c &= fgMask;
+        } else {
+            // this is a foreground color, keep current background
+            c &= bgMask;
+        }
+        c |= color;
+
+        return setColor(c);
+    }
+
     
-    // save current console color
-    if (getCurrentColor(color)) {
-        initialColor_ = color;
-    } else {
-        // cmd.exe default: 0x07 (gray on black)
-        // powershell.exe default: 0x56 (yellow on magenta ?)
-        //                         [(236,237,240) on (1,36,86)]
-        initialColor_ = gray;
+    // alternative way to set color via << override
+    std::ostream & operator<<(std::ostream& os, Color color)
+    {
+        WORD c;
+        CONSOLE_SCREEN_BUFFER_INFO info;
+        HANDLE hConsole;
+
+        hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
+        if (GetConsoleScreenBufferInfo(hConsole, &info)) {
+            c  = info.wAttributes;
+            if (color > white) {
+                // background color, clear background bits
+                // if color is bg_black, the 4 background bit is 0 so ok.
+                c &= fgMask;
+            } else {
+                // foreground color, clear foreground bits
+                c &= bgMask;
+            }
+            c |= color;   // set fg color
+            SetConsoleTextAttribute(hConsole, c);
+        }
+
+        return os;
     }
 
-    // extract out the foreground/background color
-    separateColor(initialColor_, curForeground_, curBackground_);
+
 }
-
-
-// destructor
-ConsoleColorWin::~ConsoleColorWin()
-{
-    // restore initial console color
-    setColor(initialColor_);
-}
-
-
-// return the current console color
-bool
-ConsoleColorWin::getCurrentColor(uint16_t &color)  // OUT
-{
-    CONSOLE_SCREEN_BUFFER_INFO info;
-
-    if (!GetConsoleScreenBufferInfo(hConsole_, &info)) {
-        return false;
-    }
-    color = info.wAttributes;
-
-    return true;
-}
-
-
-// break color into foreground and background
-void
-ConsoleColorWin::separateColor(uint16_t color,     // IN
-                               Color &foreground,  // OUT
-                               Color &background)  // OUT
-{
-    foreground = (Color) (color & 0xF);   // 4 LSB bits
-    background = (Color) (color & 0xF0);  // next 4 bits
-}
-
-
-// set console text to specified color
-bool
-ConsoleColorWin::setColor(uint16_t color)  // IN
-{
-    if (!SetConsoleTextAttribute(hConsole_, color)) {
-        return false;
-    }
-    
-    return true;
-}
-
-
-// set text to specified foreground/background color
-bool
-ConsoleColorWin::setColor(Color foreground,  // IN
-                          Color background)  // IN
-{
-    uint16_t c = foreground | (background << 4);
-    return setColor(c);
-}
-
-
-// change foreground color to specified, leave background unchanged.
-bool
-ConsoleColorWin::setForeground(Color color)  // IN
-{
-    return setColor(color | curBackground_);
-}
-
-
-// change background color to specified, leave foreground unchanged.
-bool
-ConsoleColorWin::setBackground(Color color)  // IN
-{
-    return setColor((color << 4) | curForeground_);
-}
-
-
-#endif  // _WIN32
