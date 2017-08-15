@@ -49,7 +49,8 @@ my $image_ext     = '(jpg)|(png)';
 my $exif_off_ext  = '(mp3)|(wav)|(flac)';
 
 # pattern for renaming standard digital camera files
-my $g_pat_rename  = '^([a-zA-Z_]*)(\d+)([a-zA-Z]*)(\..*)$';
+# 2nd last, everything except dot, to gobble up " (x)" in filename.
+my $g_pat_rename  = '^([a-zA-Z_]*)(\d+)([^.]*)(\..*)$';
 
 # pattern for samsung galaxy s3 photos, 20120930_094102[(x)].jpg
 my $g_pat_s3      = '^(\d{8}[_]\d{6})(\((\d+)\))?(\..*)$';

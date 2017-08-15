@@ -23,6 +23,7 @@ my %tag_lookup = (
     "COOLPIX L12", "L12",
     "FinePix XP70 XP71 XP75", "xp70",
     "iPhone 6 Plus", "iphone6p",
+    "iPhone 6s Plus", "iphone6sp",
     "Canon EOS DIGITAL REBEL XTi", "rebel_xti",
 #    "NIKON D90", "d90",
 #    "NIKON D70", "d70",
