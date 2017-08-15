@@ -52,9 +52,9 @@ progress dialog will be displayed.
 
 Here are some screenshots of the classic deltree.exe on MS-DOS 6.22
 
-![deltree1](https://github.com/ai7/deltree/raw/master/images/dos-deltree1.png)
+![deltree1](https://github.com/ai7/toolbox/raw/master/deltree/images/dos-deltree1.png)
 
-![deltree2](https://github.com/ai7/deltree/raw/master/images/dos-deltree2.png)
+![deltree2](https://github.com/ai7/toolbox/raw/master/deltree/images/dos-deltree2.png)
 
 ## Build
 
