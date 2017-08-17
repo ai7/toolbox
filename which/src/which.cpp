@@ -105,17 +105,17 @@ BOOL curr_first = TRUE;
 BOOL bFound = FALSE;
 
 // the search order for exe files on nt/95 systems
-LPTSTR order1[] = {_T("com"),
+LPCTSTR order1[] = {_T("com"),
 		   _T("exe"),
 		   _T("btm"),
 		   _T("bat"),
 		   _T("cmd")};
-LPTSTR order2[] = {_T("com"),
+LPCTSTR order2[] = {_T("com"),
 		   _T("exe"),
 		   _T("bat"),
 		   _T("cmd")};
 
-LPTSTR * order = order1;
+LPCTSTR * order = order1;
 INT order_len = 5;
 
 LPCTSTR pEXE;
@@ -358,7 +358,7 @@ void print_file(LPCTSTR path, LPCTSTR file, BOOL bNoEnding)
 	    }
 	    if (bSize) {
 		// size up to 999mb
-		_stprintf(szFileSize, _T("%*d "),
+		_stprintf(szFileSize, _T("%*ld "),
 			  FILESIZE_WIDTH, buf.st_size);
 	    }
 	} else { // file statistics not obtained
@@ -381,12 +381,12 @@ void print_file(LPCTSTR path, LPCTSTR file, BOOL bNoEnding)
 // because of the dbcs stuff
 BOOL EndInBackSlash(LPCTSTR szStr)
 {
-    LPCTSTR lpLastChar;       // the last character
+    LPCTSTR lpLastChar = NULL;  // the last character
     while (szStr[0] != EOS) { // while not null, go to next
 	lpLastChar = szStr;
 	szStr = CharNext(szStr);
     }
-    return (lpLastChar[0] == PATH_CHAR);
+    return (lpLastChar && lpLastChar[0] == PATH_CHAR);
 }
 
 // print all files that matches the wild card, if used
@@ -450,7 +450,7 @@ void path_find(LPCTSTR file)
 {
 
     TCHAR filename[_MAX_PATH];
-    INT i, j, iStart = 0;
+    INT i, j;
 
     if (has_extension(file)) {  // file has extension
 
@@ -874,7 +874,7 @@ void ListDriveMapping()
 			    szFname,
 			    szExt);
 		_stprintf(Drives[drive].szCwd,
-			  "%s%s%s", szDir, szFname, szExt);
+			  _T("%s%s%s"), szDir, szFname, szExt);
 	    }
 
 	    switch (Drives[drive].uType) {
@@ -951,7 +951,7 @@ void ListDriveMapping()
 // correctly because this is a c++ app and the compiler adds random
 // char after function name to support overloading, wow. Thanks go to
 // Paul-Henri for solving this problem.
-extern "C" int _tmain(int argc, TCHAR * argv[])
+extern "C" int _tmain(int argc, TCHAR *argv[], TCHAR *env[])
 {
 
     LPCTSTR pEnv = NULL;   // what env variable to look for

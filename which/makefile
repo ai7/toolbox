@@ -1,33 +1,90 @@
-# the locations to be updated for workstation
+######################################################################
+# makefile for which
+######################################################################
 
-SOURCE   = Release
-TARGET   = which.exe
+# dependency specification
 
-TARGET_A = which.new
+MAIN_TARGET = which.exe
+SRC_DIR = src
+BUILD_ROOT = build
 
-TARGET1 = c:\bin
-TARGET2 = p:\ray
-TARGET3 = c:\winnt\system32
-TARGET4 = r:\public\raychi\which
+# directories separated by space
+INCLUDE_DIRS = include
+LIB_DIRS = lib
 
-# what needs to be updated
-all: "$(TARGET1)\$(TARGET)" \
-     "$(TARGET2)\$(TARGET)" \
-     "$(TARGET3)\$(TARGET)" \
-     "$(TARGET4)\$(TARGET)" \
-     "$(TARGET4)\$(TARGET_A)"
+ifeq ("$(TARGET)","debug")
+    BUILD_DIR = $(BUILD_ROOT)/debug
+else
+    BUILD_DIR = $(BUILD_ROOT)/release
+endif
 
-"$(TARGET1)\$(TARGET)": "$(SOURCE)\$(TARGET)"
-        copy "$(SOURCE)\$(TARGET)" "$(TARGET1)"
+SRC := $(foreach sdir,$(SRC_DIR),$(wildcard $(sdir)/*.cpp))
+OBJ := $(patsubst $(SRC_DIR)/%.cpp,$(BUILD_DIR)/%.o,$(SRC))
+VPATH = $(SRC_DIR)
 
-"$(TARGET2)\$(TARGET)": "$(SOURCE)\$(TARGET)"
-        copy "$(SOURCE)\$(TARGET)" "$(TARGET2)"
+all: checkdirs $(BUILD_DIR)/$(MAIN_TARGET)
 
-"$(TARGET3)\$(TARGET)": "$(SOURCE)\$(TARGET)"
-        copy "$(SOURCE)\$(TARGET)" "$(TARGET3)"
+# main exe
+$(BUILD_DIR)/$(MAIN_TARGET): $(OBJ) $(BUILD_DIR)/Script1.o
 
-"$(TARGET4)\$(TARGET)": "$(SOURCE)\$(TARGET)"
-        copy "$(SOURCE)\$(TARGET)" "$(TARGET4)"
+# resource file
+$(BUILD_DIR)/Script1.o: $(SRC_DIR)/Script1.rc $(SRC_DIR)/resource.h
 
-"$(TARGET4)\$(TARGET_A)": "$(TARGET_A)"
-        copy "$(TARGET_A)" "$(TARGET4)"
+######################################################################
+
+# compiler settings
+
+CC = g++
+
+CC_OPTS = -D_UNICODE -DUNICODE
+
+ifeq ("$(TARGET)","debug")
+    CFLAGS   = -Wall -g $(addprefix -I,$(INCLUDE_DIRS)) $(CC_OPTS)
+    LDFLAGS  = -municode
+else
+    CFLAGS   = -Wall -O6 $(addprefix -I,$(INCLUDE_DIRS))  $(CC_OPTS)
+    LDFLAGS  = -s -municode
+endif
+
+LDLIBS = -lmpr -lversion
+
+LOADLIBES = $(addprefix -L,$(LIB_DIRS))
+
+######################################################################
+
+# additional useful target settings
+
+# create the build directory
+checkdirs: $(BUILD_DIR)
+$(BUILD_DIR):
+	mkdir -p $@
+
+# calls self with debug option set
+debug:
+	$(MAKE) TARGET=debug
+
+clean:
+	rm -rf $(BUILD_ROOT)
+
+######################################################################
+
+# phony targets are unaffected by files with the same name
+.PHONY : all clean debug
+
+# implicit rule for compiling .c to .o in BUILD_DIR
+#
+# this rule is needed because the .o is not in the the .c location,
+# even though the action is exactly the same as the implicit default.
+$(BUILD_DIR)/%.o: %.cpp
+	$(CC) $(CFLAGS) $(CPPFLAGS) -c -o $@ $<
+
+# implicit rule for compiling resource .rc to .o in BUILD_DIR
+$(BUILD_DIR)/%.o: %.rc
+	windres $< $@
+
+# implicit rule for compiling to .exe files on windows
+#
+# this rule is needed because the default rule doesn't handle .exe
+# even though the action is exactly the same as implicit default
+%.exe: %.o
+	$(CC)  $(LDFLAGS) $^ $(LOADLIBES) $(LDLIBS) -o $@
