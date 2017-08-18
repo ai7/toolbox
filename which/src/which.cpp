@@ -52,6 +52,9 @@
 
 //////////////////////////////////////////////////////////////////////
 
+// turn off mingw cmd line globbing
+int _CRT_glob = 0;
+
 // the number of random strings in the string table that's used random
 // strings in the string table must be consecutive
 int rand_size;
@@ -354,7 +357,7 @@ void print_file(LPCTSTR path, LPCTSTR file, BOOL bNoEnding)
 	    if (bTime) {
 		newtime = localtime(&buf.st_mtime); // convert time to local
 		_tcsftime(szFileTime, FILEINFO_SIZE,
-			  _T("%x %H:%M:%S "), newtime); // kinda cheated
+			  _T("%Y-%m-%d %H:%M:%S "), newtime); // kinda cheated
 	    }
 	    if (bSize) {
 		// size up to 999mb

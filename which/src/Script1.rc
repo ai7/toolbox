@@ -54,8 +54,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 2,3,0,1
- PRODUCTVERSION 2,3,0,1
+ FILEVERSION 2,3,0,2
+ PRODUCTVERSION 2,3,0,2
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -71,14 +71,14 @@ BEGIN
         BLOCK "040904b0"
         BEGIN
             VALUE "Comments", "Which utility by Raymond Chi\0"
-            VALUE "CompanyName", "Mosaix, Inc.\0"
+            VALUE "CompanyName", "My Home, Inc.\0"
             VALUE "FileDescription", "which\0"
-            VALUE "FileVersion", "2, 3, 0, 1\0"
+            VALUE "FileVersion", "2, 3, 0, 2\0"
             VALUE "InternalName", "which\0"
             VALUE "LegalCopyright", "Copyright © 1998\0"
             VALUE "OriginalFilename", "which.exe\0"
             VALUE "ProductName", "Which Utility\0"
-            VALUE "ProductVersion", "2, 3, 0, 1\0"
+            VALUE "ProductVersion", "2, 3, 0, 2\0"
         END
     END
     BLOCK "VarFileInfo"
@@ -101,7 +101,7 @@ BEGIN
     IDS_DUP_ENV             "Environment variable already set to `%s': `%s'"
     IDS_INVALID_PARM        "Invalid parameter: `%s'"
     IDS_BAD_CWD             "%s: _getcwd() error.\n"
-    IDS_HELP                "Which %s [WIN32, %s %s] (%s%s)\n(c) 1997-1998 by Raymond Chi, all rights reserved.\n\nUsage: %s [options] [file(s) ... ]\n\nOptions:\n\t/h|?\t= Display this help screen.\n\t/iVAR\t= Use environment variable %%VAR instead of %%Path.\n\t/c\t= Search current directory only.\n\t/v\t= Display version information on files.\n\t/t\t= Display last modification date/time on files.\n\t/s\t= Display files size.\n\t/a\t= Search 4NT/4DOS alias only.\n\t/d|f\t= Disable/Force 4NT/4DOS mode.\n\t/w\t= Update alias file %s.\n\t/m\t= Display drive mapping information.\n\nBitFlags:\n\t* = Current directory.\t\tD = Duplicated entry.\n\tX = Directory doesn't exist.\tE = Empty entry.\n\tN = Network directory.\t\tS = Entry ends with whitespace.\n\n%s\n"
+    IDS_HELP                "Which %s [WIN64, %s %s] (%s%s)\n(c) 1997-2017 by Raymond Chi, all rights reserved.\n\nUsage: %s [options] [file(s) ... ]\n\nOptions:\n\t/h|?\t= Display this help screen.\n\t/iVAR\t= Use environment variable %%VAR instead of %%Path.\n\t/c\t= Search current directory only.\n\t/v\t= Display version information on files.\n\t/t\t= Display last modification date/time on files.\n\t/s\t= Display files size.\n\t/a\t= Search 4NT/4DOS alias only.\n\t/d|f\t= Disable/Force 4NT/4DOS mode.\n\t/w\t= Update alias file %s.\n\t/m\t= Display drive mapping information.\n\nBitFlags:\n\t* = Current directory.\t\tD = Duplicated entry.\n\tX = Directory doesn't exist.\tE = Empty entry.\n\tN = Network directory.\t\tS = Entry ends with whitespace.\n\n%s\n"
     IDS_NOTFOUND_ALIAS      "%s not found in alias list.\n"
     IDS_NOTFOUND1           "%s not found in %%%s.\n"
     IDS_NOTFOUND2           "%s{.com|.exe|.btm|.bat|.cmd} not found in %%%s.\n"
@@ -116,20 +116,20 @@ END
 
 STRINGTABLE DISCARDABLE 
 BEGIN
-    IDS_RAND1               "Questions/comments to raychi@mosaix.com."
+    IDS_RAND1               "Questions/comments to raychi@gmail.com."
     IDS_RAND2               "Me think its time you read the manual."
     IDS_RAND3               "I bet you don't know what workflow is."
     IDS_RAND4               "Cool people will use Which."
     IDS_RAND5               "Am I a cool Which or what?"
     IDS_RAND6               "And you thought I'd run out of strings!"
-    IDS_RAND7               "Why not send a postcard to raychi@mosaix.com!"
+    IDS_RAND7               "Why not send a postcard to raychi@gmail.com!"
     IDS_RAND8               "Complaints, I don't wanta hear it!"
     IDS_RAND9               "Me think your PATH is too long!"
     IDS_RAND10              "Me think your PATH is too short!"
     IDS_RAND11              "I bet you don't know what PATH is."
     IDS_RAND12              "Bored? Why not try `which * /v /t' and see for yourself."
     IDS_RAND13              "You can use Which to find any file in your path."
-    IDS_RAND14              "I am sick of your search!"
+    IDS_RAND14              "I am tired of your search!"
     IDS_RAND15              "Tip #1: Options can begin with either / or -."
     IDS_RAND16              "Tip #2: Wildcards (*, ?) in filenames are supported, try it!"
 END
