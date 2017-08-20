@@ -50,7 +50,7 @@ my $exif_off_ext  = '(mp3)|(wav)|(flac)';
 
 # pattern for renaming standard digital camera files
 # 2nd last, everything except dot, to gobble up " (x)" in filename.
-my $g_pat_rename  = '^([a-zA-Z_]*)(\d+)([^.]*)(\..*)$';
+my $g_pat_rename  = '^([a-zA-Z_]*)(\d+)([a-zA-Z]*)(\..*)$';
 
 # pattern for samsung galaxy s3 photos, 20120930_094102[(x)].jpg
 my $g_pat_s3      = '^(\d{8}[_]\d{6})(\((\d+)\))?(\..*)$';
@@ -982,7 +982,9 @@ sub get_subdirs_from_files
             # construct folder name
             my $folder = "$1_$2_$3";
             if ($hashtable{$folder}) {
-                push($hashtable{$folder}, $f);
+                # perl 5.24 disallows push on scalar expression
+                # push($hashtable{$folder}, $f);
+                push(@{$hashtable{$folder}}, $f);
             } else {
                 $hashtable{$folder} = [$f];
             }

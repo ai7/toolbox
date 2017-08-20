@@ -245,11 +245,12 @@ sub promptUser
     my ($prompt_string, $valid) = @_;
 
     print $prompt_string;
+    select()->flush();
 
     ReadMode 3;
-    my $key = ReadKey;
+    my $key = ReadKey(0);
     while ($key !~ /$valid/i) {
-        $key = ReadKey;
+        $key = ReadKey(0);
     }
     ReadMode 0;
 
