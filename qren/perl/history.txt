@@ -72,4 +72,8 @@
 #   - synced with home code
 #   - output perl version/os on help screen
 #
+# 7.36 (08/22/2017)
+#   - updated to run under strawberry perl v5.26
+#   - removed experimental given/when, simplified imports.
+#
 ######################################################################
