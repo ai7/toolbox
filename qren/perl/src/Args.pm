@@ -3,17 +3,9 @@
 
 package Args;
 
-use v5.10;
+# perl behavior
 use strict;
 use diagnostics;
-
-# disable experimental warning on 5.18 and higher
-no if ($] >= 5.018), 'warnings' => 'experimental';
-
-# use Getopt::Std;
-
-# exit after print help
-# $Getopt::Std::STANDARD_HELP_VERSION = 1;
 
 # module vars
 our $parm_mode = 0;          # mode of operation
@@ -34,8 +26,8 @@ my @options;                 # list of cmd line flags
 my $argv0 = $0;              # executable name
 
 my $usage_ver =
-    "Q-Rename 7.3.5 [Perl/$^O $^V, 2015-02-20]\n" .
-    "(c) 2002-2015 by Raymond Chi, all rights reserved.\n";
+    "Q-Rename 7.3.6 [Perl/$^O $^V, 2017-08-22]\n" .
+    "(c) 2002-2017 by Raymond Chi, all rights reserved.\n";
 
 my $usage_help =
     "\nUsage: $argv0 <options> <files...>\n\n" .
@@ -111,67 +103,65 @@ sub process_args
 
     # processing options here
     for my $i (@options) {
-        given ($i) {
-            when (/^i(.*)$/i) { # -i, (1) info
-                $parm_mode = 1;
-                if ($1 eq "d") {
-                    $parm_info = 1;
-                }
+        if ($i =~ /^i(.*)$/i) {    # -i, (1) info
+            $parm_mode = 1;
+            if ($1 eq "d") {
+                $parm_info = 1;
             }
-            when (/^r$/i) {     # -r, (2) rename
-                $parm_mode = 2;
+        }
+        elsif ($i =~ /^r$/i) {     # -r, (2) rename
+            $parm_mode = 2;
+        }
+        elsif ($i =~ /^f$/i) {     # -f, use file timestamp
+            $parm_exiftime = 0;
+        }
+        elsif ($i =~ /^e(.*)$/i) { # -e, tag
+            $parm_tag = Util::verify_tag($1);
+        }
+        elsif ($i =~ /^o(.*)$/i) { # -o, offset
+            $parm_offset = Util::verify_offset($1);
+        }
+        elsif ($i =~ /^y$/i) {     # -y, force rename already processed
+            $parm_rename_force = 1;
+        }
+        elsif ($i =~ /^t$/i) {     # -t, (3) touch file
+            $parm_mode = 3;
+        }
+        elsif ($i =~ /^c(.*)$/i) { # -c, (6) clear orientation
+            $parm_mode = 6;
+            if ($1 =~ /^(\d+)$/) {
+                $parm_clr_orien = $1;
             }
-            when (/^f$/i) {     # -f, use file timestamp
-                $parm_exiftime = 0;
-            }
-            when (/^e(.*)$/i) { # -e, tag
-                $parm_tag = Util::verify_tag($1);
-            }
-            when (/^o(.*)$/i) { # -o, offset
-                $parm_offset = Util::verify_offset($1);
-            }
-            when (/^y$/i) {     # -y, force rename already processed
-                $parm_rename_force = 1;
-            }
-            when (/^t$/i) {     # -t, (3) touch file
-                $parm_mode = 3;
-            }
-            when (/^c(.*)$/i) { # -c, (6) clear orientation
-                $parm_mode = 6;
-                if ($1 =~ /^(\d+)$/) {
-                    $parm_clr_orien = $1;
-                }
-            }
-            when (/^b$/i) {     # -b, (7) extract thumbnail
-                $parm_mode = 7;
-            }
-            when (/^s$/i) {     # -s, (8) process into subdirs
-                $parm_mode = 8;
-            }
-            when (/^q$/i) {     # -a, (9) vuescan files
-                $parm_mode = 9;
-            }
-            when (/^k$/i) {     # -k, (4) kodak pictureCD
-                $parm_mode = 4;
-            }
-            when (/^a$/i) {     # -a, (5) pictureCD
-                $parm_mode = 5;
-            }
-            when (/^x(.*)$/i) { # -x, film roll ID
-                $parm_pcd_n = Util::verify_roll($1);
-            }
-            when (/^d(.*)$/i) { # -d, date
-                $parm_pcd_d = Util::verify_date($1);
-            }
-            when (/^n$/i) {     # simulate mode
-                $parm_simulate = 1;
-            }
-            when (/^p$/i) {     # prompt mode
-                $parm_prompt = 1;
-            }
-            default {
-                print_usage();
-            }
+        }
+        elsif ($i =~ /^b$/i) {     # -b, (7) extract thumbnail
+            $parm_mode = 7;
+        }
+        elsif ($i =~ /^s$/i) {     # -s, (8) process into subdirs
+            $parm_mode = 8;
+        }
+        elsif ($i =~ /^q$/i) {     # -a, (9) vuescan files
+            $parm_mode = 9;
+        }
+        elsif ($i =~ /^k$/i) {     # -k, (4) kodak pictureCD
+            $parm_mode = 4;
+        }
+        elsif ($i =~ /^a$/i) {     # -a, (5) pictureCD
+            $parm_mode = 5;
+        }
+        elsif ($i =~ /^x(.*)$/i) { # -x, film roll ID
+            $parm_pcd_n = Util::verify_roll($1);
+        }
+        elsif ($i =~ /^d(.*)$/i) { # -d, date
+            $parm_pcd_d = Util::verify_date($1);
+        }
+        elsif ($i =~ /^n$/i) {     # simulate mode
+            $parm_simulate = 1;
+        }
+        elsif ($i =~ /^p$/i) {     # prompt mode
+            $parm_prompt = 1;
+        }
+        else {
+            print_usage();
         }
     }
 

@@ -6,11 +6,9 @@
 
 package Picture_cd;
 
+# perl behavior
 use strict;
 use diagnostics;
-
-use Time::Local;
-use Term::ReadKey;
 
 
 # renames the input file to the name

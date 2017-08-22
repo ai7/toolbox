@@ -6,28 +6,23 @@
 # It is useful to convert files from digital camera to a more
 # meaningful name for archiving purposes
 
-# (c) 2002-2015 Raymond Chi <raymondc@cal.berkeley.edu>
-
-# requires Term/ReadKey package. To install
-# 1) ppm3-bin.exe
-# 2) install TermReadKey
+# (c) 2002-2017 Raymond Chi <raymondc@cal.berkeley.edu>
 
 package qren;
 
-use v5.10;
+# perl behavior
 use strict;
 use diagnostics;
 
-# disable experimental warning on 5.18 and higher
-no if ($] >= 5.018), 'warnings' => 'experimental';
-
+# standard perl modules
 use POSIX qw(strftime);
-
-use Term::ReadKey;
 use Time::Local;
-use Image::ExifTool;
 use File::Spec;
 
+# additional modules
+use Image::ExifTool;  # http://search.cpan.org/~exiftool/
+
+# local qren modules
 use Util;
 use Args;
 use Picture_cd;
@@ -94,82 +89,89 @@ exit;
 # do the required work (display info, rename, touch, etc..)
 sub execute_commands
 {
-    given ($Args::parm_mode) {
-        when (1) { # info
-            $operation = "processed";
-            for my $f (@Args::files) {
-                display_exif_info($f);
-            }
-        }
-        when (2) { # rename
-            $operation = "renamed";
-            for my $f (@Args::files) {
-                rename_file($f);
-            }
-        }
-        when (3) { # touch
-            $operation = "touched";
-            for my $f (@Args::files) {
-                touch_file($f);
-            }
-        }
-        when (4) { # pictureCD1
-            # verify roll and date specified for picturecd
-            if ($Args::parm_pcd_n == 0) {
-                print "Error: roll number \"-x<XXXX>\" must be specified for -k!\n";
-                exit;
-            } elsif ($Args::parm_pcd_d eq "") {
-                print "Error: date \"-d<YYYYMMDD>\" must be specified for -a\n";
-                exit;
-            }
-            $operation = "renamed";
-            for my $f (@Args::files) {
-                Picture_cd::rename_picturecd1($f);
-            }
-        }
-        when (5) { # pictureCD2
-            # verify roll or date specified for picturecd reprocess
-            if ($Args::parm_pcd_n == 0 && $Args::parm_pcd_d eq "") {
-                print "Error: -x AND/OR -d must be specified for -a\n";
-                exit;
-            }
-            $operation = "renamed";
-            for my $f (@Args::files) {
-                Picture_cd::rename_picturecd2($f);
-            }
-        }
-        when (6) { # clear exif orientation
-            $operation = "processed";
-            for my $f (@Args::files) {
-                clear_exif_orientation($f);
-            }
-        }
-        when (7) { # extract thumb image
-            $operation = "extracted";
-            for my $f (@Args::files) {
-                extract_thumb_image($f);
-            }
-        }
+    # Removed given/when construct as it became experimental in perl
+    # v5.18. Now Uses standard if/elsif block to be most compatible
+    # going forward.
 
-        when (8) { # process files into subdirs
-            $operation = "processed";
-            process_into_folders(\@Args::files); # pass by ref
+    if ($Args::parm_mode == 1) {     # info
+        $operation = "processed";
+        for my $f (@Args::files) {
+            display_exif_info($f);
         }
+    }
 
-        when (9) { # rename scan files
-            if ($Args::parm_pcd_n == 0) {
-                print "Error: roll number \"-x<XXX>\" must be specified for -q!\n";
-                exit;
-            } elsif ($Args::parm_pcd_d eq "") {
-                print "Error: date \"-d<YYYYMMDD>\" must be specified for -q\n";
-                exit;
-            }
-            $operation = "renamed";
-            for my $f (@Args::files) {
-                Picture_cd::rename_scanned($f);
-            }
+    elsif ($Args::parm_mode == 2) {  # rename
+        $operation = "renamed";
+        for my $f (@Args::files) {
+            rename_file($f);
         }
+    }
 
+    elsif ($Args::parm_mode == 3) {  # touch
+        $operation = "touched";
+        for my $f (@Args::files) {
+            touch_file($f);
+        }
+    }
+
+    elsif ($Args::parm_mode == 4) {  # pictureCD1
+        # verify roll and date specified for picturecd
+        if ($Args::parm_pcd_n == 0) {
+            print "Error: roll number \"-x<XXXX>\" must be specified for -k!\n";
+            exit;
+        } elsif ($Args::parm_pcd_d eq "") {
+            print "Error: date \"-d<YYYYMMDD>\" must be specified for -a\n";
+            exit;
+        }
+        $operation = "renamed";
+        for my $f (@Args::files) {
+            Picture_cd::rename_picturecd1($f);
+        }
+    }
+
+    elsif ($Args::parm_mode == 5) {  # pictureCD2
+        # verify roll or date specified for picturecd reprocess
+        if ($Args::parm_pcd_n == 0 && $Args::parm_pcd_d eq "") {
+            print "Error: -x AND/OR -d must be specified for -a\n";
+            exit;
+        }
+        $operation = "renamed";
+        for my $f (@Args::files) {
+            Picture_cd::rename_picturecd2($f);
+        }
+    }
+
+    elsif ($Args::parm_mode == 6) {  # clear exif orientation
+        $operation = "processed";
+        for my $f (@Args::files) {
+            clear_exif_orientation($f);
+        }
+    }
+
+    elsif ($Args::parm_mode == 7) {  # extract thumb image
+        $operation = "extracted";
+        for my $f (@Args::files) {
+            extract_thumb_image($f);
+        }
+    }
+
+    elsif ($Args::parm_mode == 8) {  # process files into subdirs
+        $operation = "processed";
+        process_into_folders(\@Args::files); # pass by ref
+    }
+
+    elsif ($Args::parm_mode == 9) {  # rename scan files
+        if ($Args::parm_pcd_n == 0) {
+            print "Error: roll number \"-x<XXX>\" must be specified for -q!\n";
+            exit;
+        } elsif ($Args::parm_pcd_d eq "") {
+            print "Error: date \"-d<YYYYMMDD>\" must be specified for -q\n";
+            exit;
+        }
+        $operation = "renamed";
+        for my $f (@Args::files) {
+            Picture_cd::rename_scanned($f);
+        }
     }
 }
 

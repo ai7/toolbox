@@ -3,16 +3,16 @@
 
 package Util;
 
-use v5.10;
+# perl behavior
 use strict;
 use diagnostics;
 
-# disable experimental warning on 5.18 and higher
-no if ($] >= 5.018), 'warnings' => 'experimental';
-
+# standard perl modules
 use Time::Local;
 use Term::ReadKey;
-use Image::ExifTool;
+
+# additional modules
+use Image::ExifTool;  # http://search.cpan.org/~exiftool/
 
 
 # hash of Model -> tags for auto tag generation. some are not needed
@@ -144,15 +144,15 @@ sub extract_make
 {
     my ($info) = @_;
     my $model = 0;
+    my $make;
 
     if ($info->{Make}) {
-        given ($info->{Make}) {
-            when (/nikon/i)      { $model = 1; }
-            when (/canon/i)      { $model = 2; }
-            when (/sony/i)       { $model = 3; }
-            when (/panasonic/i)  { $model = 4; }
-            when (/apple/i)      { $model = 5; }
-        }
+        $make = $info->{Make};
+        if    ($make =~ /nikon/i)     { $model = 1; }
+        elsif ($make =~ /canon/i)     { $model = 2; }
+        elsif ($make =~ /sony/i)      { $model = 3; }
+        elsif ($make =~ /panasonic/i) { $model = 4; }
+        elsif ($make =~ /apple/i)     { $model = 5; }
     }
 
     return $model;
