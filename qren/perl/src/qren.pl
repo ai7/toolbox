@@ -18,19 +18,20 @@ use diagnostics;
 use POSIX qw(strftime);
 use Time::Local;
 use File::Spec;
+use File::Basename;
 
 # additional modules
 use Image::ExifTool;  # http://search.cpan.org/~exiftool/
 
 # local qren modules
-use Const;            # other local modules can see it too
+use lib dirname(__FILE__);  # add script dir to @INC
+use Const;
 use Util;
 use Args;
 use Picture_cd;
 
-# module vars visible to other pm files
-
-our $success = 0;  # statistics
+# module vars, visible to other pm files
+our $success = 0;       # statistics
 our $failed = 0;
 our $skipped = 0;
 our $max_filename = 0;  # maximum filename length
