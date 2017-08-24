@@ -23,6 +23,7 @@ use File::Spec;
 use Image::ExifTool;  # http://search.cpan.org/~exiftool/
 
 # local qren modules
+use Const;            # other local modules can see it too
 use Util;
 use Args;
 use Picture_cd;
@@ -34,56 +35,30 @@ our $failed = 0;
 our $skipped = 0;
 our $max_filename = 0;  # maximum filename length
 
-# trigger video info for -i
-my $video_ext     = '(mts)|(m2ts)|(mkv)|(avi)|(mov)|(mp3)|(wav)|(flac)';
-
-# image files
-my $image_ext     = '(jpg)|(png)';
-
-# turn exif off
-my $exif_off_ext  = '(mp3)|(wav)|(flac)';
-
-# pattern for renaming standard digital camera files
-# 2nd last, everything except dot, to gobble up " (x)" in filename.
-my $g_pat_rename  = '^([a-zA-Z_]*)(\d+)([a-zA-Z]*)(\..*)$';
-
-# pattern for samsung galaxy s3 photos, 20120930_094102[(x)].jpg
-my $g_pat_s3      = '^(\d{8}[_]\d{6})(\((\d+)\))?(\..*)$';
-
-# sony pcm-m10 files, YYMMDD_NN.mp3
-my $g_pat_voice   = '^(\d{6})_(\d{2})(\..*)$';
-
-# pattern for already renamed files (using either _ or - as divider)
-my $g_pat_already = '(\d{8}[_-]\d{6})[_-](\d+)([_-]([\w \+-]+))?(\..*)$';
-
-# lg phone: 0422071811a.jpg MMDDYYHHMMx (up to +10 pics in one min)
-my $g_pat_lgphone = '^(\d{2})(\d{2})(\d{2})(\d{2})(\d{2})([a-j])?(\..*)$';
-
-# already renamed files to process into subdirs
-my $g_pat_subdirs = '^(\d{4})(\d{2})(\d{2})_\d{6}_(\d+)(_([\w\+-]+))?(\..*)$';
-
-# vuescan generated scan files
-our $g_pat_scan   = '^([a-zA-Z]*)-(\d{6})-(\d+)(\..*)$';
-
-######################################################################
-
-# begin main script
-
+# global vars
 my $min_valid_time = timelocal(0, 0, 0, 1, 2, 1995);  # Kodak DCS460
 my $operation;
 
-Args::process_args();                            # process command line arguments
-
-$max_filename = Util::max_string(\@Args::files);
-
-execute_commands();                              # do the actual work
-
-# print statistics
-print "\t$success file(s) $operation, $failed file(s) failed, $skipped file(s) skipped\n";
-
-exit;
 
 ######################################################################
+
+# entry point function
+sub main
+{
+    # process command line arguments
+    Args::process_args();
+
+    # figure out the maximum input filename length
+    $max_filename = Util::max_string(\@Args::files);
+
+    # do the actual work
+    execute_commands();
+
+    # print statistics
+    print "\t$success file(s) $operation, $failed file(s) failed, $skipped file(s) skipped\n";
+
+    return 0;
+}
 
 
 # do the required work (display info, rename, touch, etc..)
@@ -185,7 +160,7 @@ sub generate_new_filename
     my $new_time;   # return value #2
 
     # override exif flag for certain extensions
-    if ($ext =~ /^\.($exif_off_ext)$/i) {
+    if ($ext =~ /^\.($Const::exif_off_ext)$/i) {
         $use_exif = 0;
     }
 
@@ -267,7 +242,7 @@ sub rename_file
     my $reprocess_offset = 0;
 
     # handles this first as standard rename matches this too
-    if ($filename =~ /$g_pat_lgphone/) {
+    if ($filename =~ /$Const::pat_lgphone/) {
 
         my ($month, $day, $year, $hour, $min) = ($1, $2, $3, $4, $5);
 
@@ -289,7 +264,7 @@ sub rename_file
                            $year, $month, $day, $hour, $min, $seq, $tag, $ext);
 
     # optional alpha, required digit, optional alpha, .ext
-    } elsif ($filename =~ /$g_pat_rename/) {
+    } elsif ($filename =~ /$Const::pat_rename/) {
 
         # If files are in original digital camera name format
         my $seq = sprintf("%.4d", $2);  # set seq length to 4
@@ -302,7 +277,7 @@ sub rename_file
         ($newname, $newtime) = generate_new_filename($filename, $seq, $ext,
                                                       $tag, $Args::parm_exiftime);
 
-    } elsif ($filename =~ /$g_pat_voice/) {
+    } elsif ($filename =~ /$Const::pat_voice/) {
 
         # this matches YYMMDD_NN.mp3, voice files from sony pcm-m10
         my $seq = $2; # sequence as is without expanding into 4 chars
@@ -313,7 +288,7 @@ sub rename_file
                                                       $tag, $Args::parm_exiftime);
 
         # removed ^ in matching so 20d_20050101* files will match
-    } elsif ($filename =~ /$g_pat_already/) {
+    } elsif ($filename =~ /$Const::pat_already/) {
 
         my $filename_time = Util::convert_timestamp_file($1);
         # take seq as is, so shorter seq will be kept shorter
@@ -325,7 +300,7 @@ sub rename_file
         # force sequence length to be the last 4 digits if it is longer
         $seq = substr($seq, -4)      if (length($seq) > 4);
         # increase to 4 digits if image files and less than 4 digits
-        $seq = sprintf("%.4d", $seq) if (length($seq) < 4 && $ext =~ /^\.($image_ext)$/i);
+        $seq = sprintf("%.4d", $seq) if (length($seq) < 4 && $ext =~ /^\.($Const::image_ext)$/i);
 
         # matches already renamed file, needs to handle with caution
         # safety check, do nothing if offset, tag, or force not specified
@@ -355,7 +330,7 @@ sub rename_file
             $reprocess_offset = $newtime - $filename_time if (defined $newtime);
         }
 
-    } elsif ($filename =~ /$g_pat_s3/) {
+    } elsif ($filename =~ /$Const::pat_s3/) {
 
         # the s3 creates files with timestamp in its name, nice!!
         my $filename_time = Util::convert_timestamp_file($1);
@@ -533,7 +508,7 @@ sub display_exif_info
     if (!$Args::parm_info) {
 
         my ($ext) = $filename =~ /\.(\w+)$/;
-        if ($ext =~ /^($video_ext)$/i) {
+        if ($ext =~ /^($Const::video_ext)$/i) {
             display_video_info_short($filename, $info, $model);
         } else {
             display_image_info_short($filename, $info, $model);
@@ -980,7 +955,7 @@ sub get_subdirs_from_files
     for my $f (@$files_ref) {
         printf("%-*s => ", $max_filename, $f);
         # see if file matches already renamed pattern
-        if ($f =~ /$g_pat_subdirs/) {
+        if ($f =~ /$Const::pat_subdirs/) {
             # construct folder name
             my $folder = "$1_$2_$3";
             if ($hashtable{$folder}) {
@@ -1165,6 +1140,15 @@ sub process_into_folders
     return;
 
 }
+
+
+######################################################################
+
+# begin main script
+exit main();
+
+######################################################################
+
 
 # @ todo
 # * once default exiftool in repository reaches 7.5.2, can have duration, and can

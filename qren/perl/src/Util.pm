@@ -15,30 +15,7 @@ use Term::ReadKey;
 use Image::ExifTool;  # http://search.cpan.org/~exiftool/
 
 
-# hash of Model -> tags for auto tag generation. some are not needed
-# due to intelligent auto processing.
-my %tag_lookup = (
-    "SCH-I535", "galaxys3",
-    "Canon PowerShot SD1200 IS", "sd1200",
-    "COOLPIX L12", "L12",
-    "FinePix XP70 XP71 XP75", "xp70",
-    "iPhone 6 Plus", "iphone6p",
-    "iPhone 6s Plus", "iphone6sp",
-    "Canon EOS DIGITAL REBEL XTi", "rebel_xti",
-#    "NIKON D90", "d90",
-#    "NIKON D70", "d70",
-#    "DMC-GF1", "gf1",
-#    "iPhone 4", "iphone4",
-#    "Canon PowerShot S90", "s90",
-#    "Canon PowerShot SD500", "sd500",
-);
-
-# value that should be removed from exif Model field to generate tag
-my @tag_trim = ("NIKON", "Canon", "PowerShot", "DMC-", "COOLPIX");
-
-
 ######################################################################
-
 
 sub verify_date
 {
@@ -170,10 +147,10 @@ sub auto_generate_tag
     if (defined $model) {
         # do we have a predefined value for this Model?
         # if not, will trying to construct a tag automatically
-        $tag = $tag_lookup{$model};
+        $tag = $Const::tag_lookup{$model};
         if (!defined $tag) {
             # first remove branding strings
-            for my $remove_str (@tag_trim) {
+            for my $remove_str (@Const::tag_trim) {
                 $model =~ s/$remove_str//i;
             }
             # remove whitespace from string

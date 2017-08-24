@@ -167,7 +167,7 @@ sub rename_scanned
     my $newname;
 
     # handles this first as standard rename matches this too
-    if ($filename =~ /$qren::g_pat_scan/) {
+    if ($filename =~ /$Const::pat_scan/) {
 
         # extract data from the pattern
         my ($prefix, $scandate, $seq1, $ext) = ($1, $2, $3, $4);
