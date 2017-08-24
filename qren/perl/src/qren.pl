@@ -1,4 +1,4 @@
-#!/usr/local/bin/perl -w
+#!/usr/local/bin/perl
 
 # This program renames files to YYYYMMDD_HHMMSS_NNNN.ext
 # based on the file timestamp and sequence number in the filename.
@@ -12,7 +12,8 @@ package qren;
 
 # perl behavior
 use strict;
-use diagnostics;
+use warnings;
+# use diagnostics;
 
 # standard perl modules
 use POSIX qw(strftime);
@@ -48,6 +49,9 @@ sub main
 {
     # process command line arguments
     Args::process_args();
+
+    # read config file and setup variables
+    Const::read_config();
 
     # figure out the maximum input filename length
     $max_filename = Util::max_string(\@Args::files);

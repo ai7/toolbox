@@ -8,7 +8,7 @@ package Picture_cd;
 
 # perl behavior
 use strict;
-use diagnostics;
+use warnings;
 
 
 # renames the input file to the name

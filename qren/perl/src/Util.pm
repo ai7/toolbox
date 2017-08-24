@@ -5,7 +5,7 @@ package Util;
 
 # perl behavior
 use strict;
-use diagnostics;
+use warnings;
 
 # standard perl modules
 use Time::Local;

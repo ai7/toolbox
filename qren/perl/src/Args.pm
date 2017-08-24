@@ -5,7 +5,7 @@ package Args;
 
 # perl behavior
 use strict;
-use diagnostics;
+use warnings;
 
 # module vars
 our $parm_mode = 0;          # mode of operation
@@ -26,7 +26,7 @@ my @options;                 # list of cmd line flags
 my $argv0 = $0;              # executable name
 
 my $usage_ver =
-    "Q-Rename 7.3.6 [Perl/$^O $^V, 2017-08-22]\n" .
+    "Q-Rename 7.4.0 [Perl/$^O $^V, 2017-08-24]\n" .
     "(c) 2002-2017 by Raymond Chi, all rights reserved.\n";
 
 my $usage_help =

@@ -1,0 +1,72 @@
+# qren configuration file
+
+# YAML is easy on the eyes, and no need to escape the \ char in our
+# regular expressions, making it the perfect choice for our needs.
+
+---
+
+# regular expression patterns for matching filenames
+filename:
+
+    # pattern for renaming standard digital camera files
+    rename:  ^([a-zA-Z_]*)(\d+)([a-zA-Z]*)(\..*)$
+
+    # pattern for already renamed files (using either _ or - as divider)
+    already: (\d{8}[_-]\d{6})[_-](\d+)([_-]([\w \+-]+))?(\..*)$
+
+    # already renamed files to process into subdirs
+    subdirs: ^(\d{4})(\d{2})(\d{2})_\d{6}_(\d+)(_([\w\+-]+))?(\..*)$
+
+    # pattern for samsung galaxy s3 photos, 20120930_094102[(x)].jpg
+    s3:      ^(\d{8}[_]\d{6})(\((\d+)\))?(\..*)$
+
+    # sony pcm-m10 files, YYMMDD_NN.mp3
+    voice:   ^(\d{6})_(\d{2})(\..*)$
+
+    # lg phone: 0422071811a.jpg MMDDYYHHMMx (up to +10 pics in one min)
+    lgphone: ^(\d{2})(\d{2})(\d{2})(\d{2})(\d{2})([a-j])?(\..*)$
+
+    # vuescan generated scan files
+    scan:    ^([a-zA-Z]*)-(\d{6})-(\d+)(\..*)$
+
+
+# regular expression pattern for matching file extensions
+extension:
+
+    # image files
+    image: (jpg)|(png)
+
+    # trigger video info for -i
+    video: (mts)|(m2ts)|(mkv)|(avi)|(mov)|(mp3)|(wav)|(flac)
+
+    # turn exif off
+    exif_off: (mp3)|(wav)|(flac)
+
+
+# tag handling in filenames
+tag:
+
+    # hash of Model -> tags for auto tag generation. some are not needed
+    # due to intelligent auto processing.
+    lookup:
+        SCH-I535: galaxys3
+        Canon PowerShot SD1200 IS: sd1200
+        COOLPIX L12: L12
+        FinePix XP70 XP71 XP75: xp70
+        iPhone 6 Plus: iphone6p
+        iPhone 6s Plus: iphone6sp
+        Canon EOS DIGITAL REBEL XTi: rebel_xti
+        # "NIKON D90", "d90",
+        # "NIKON D70", "d70",
+        # "DMC-GF1", "gf1",
+        # "iPhone 4", "iphone4",
+        # "Canon PowerShot S90", "s90",
+        # "Canon PowerShot SD500", "sd500",
+
+    # value that should be removed from exif Model field to generate tag
+    trim:
+        - NIKON
+        - Canon
+        - PowerShot
+        - DMC-
+        - COOLPIX
