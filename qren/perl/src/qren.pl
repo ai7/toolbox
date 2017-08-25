@@ -177,10 +177,21 @@ sub generate_new_filename
             print "no EXIF time! ";
             return;
         }
-        if (!defined $Args::parm_tag && $gtag) {
+        if (!defined $Args::parm_tag) {
             # tag is not specified on the command line, use the auto
             # generated tag name based on the exif Model field.
-            $tag = "_$gtag";
+            if ($gtag) {
+                $tag = "_$gtag";
+            }
+            # else do nothing, use current tag value
+        } else {
+            # tag is defined on command line, check if in append mode
+            # or not.
+            if ($Args::parm_tag_append) {
+                # if append mode, add it to the auto generated tag
+                $tag = "_$gtag$Args::parm_tag";
+            }
+            # else do nothing, use current tag value
         }
         # convert timestamp to # of sec since epoch
         my $exif_time = Util::convert_timestamp_exif($exif_time_string);
@@ -318,7 +329,11 @@ sub rename_file
 
         # tag on parameter overrides filename tag, including ""
         if (defined $Args::parm_tag) {
-            $tag = $Args::parm_tag;
+            if (! $Args::parm_tag_append) {
+                $tag = $Args::parm_tag;
+            } else {
+                $tag .= $Args::parm_tag;
+            }
         } elsif (! defined $tag) {
             $tag = "";
         }

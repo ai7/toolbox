@@ -12,6 +12,7 @@ our $parm_mode = 0;          # mode of operation
 our $parm_info = 0;          # how to display exif info
 our $parm_exiftime = 1;      # whether to use exif time or file time
 our $parm_tag;               # tag value in filename
+our $parm_tag_append;        # whether to append to (auto) tag or set
 our $parm_offset = 0;        # time offset
 our $parm_rename_force = 0;  # force rename operation
 our $parm_pcd_n = 0;         # film roll id
@@ -36,7 +37,7 @@ my $usage_help =
     "  -i[d]        Display/dump EXIF information in files\n" .
     "  -r           Rename files to YYYYMMDD_HHMMSS_NNNN[_tag].ext\n" .
     "    -o<offset> time offset as [-]h:m:s                  [-r/-t]\n" .
-    "    -e<tag>    tag such as camera model (default: auto) [-r]\n" .
+    "    -e[+]<tag> append to or set tag (default: auto)     [-r]\n" .
     "    -f         use file timestamp instead of EXIF time  [-i/-r]\n" .
     "    -y         re-process based on exif/file time       [-r]\n" .
     "    -d<date>   manual date if exif/file time < 1995/03  [-r]\n" .
@@ -117,8 +118,11 @@ sub process_args
         elsif ($i =~ /^f$/i) {     # -f, use file timestamp
             $parm_exiftime = 0;
         }
-        elsif ($i =~ /^e(.*)$/i) { # -e, tag
-            $parm_tag = Util::verify_tag($1);
+        elsif ($i =~ /^e(\+?)(.*)$/i) { # -e, tag
+            $parm_tag = Util::verify_tag($2);
+            if ($1) {
+                $parm_tag_append = 1;
+            }
         }
         elsif ($i =~ /^o(.*)$/i) { # -o, offset
             $parm_offset = Util::verify_offset($1);
