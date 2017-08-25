@@ -1,79 +1,84 @@
                              qren History
+                    Raymond Chi <raychi@gmail.com>
 
-######################################################################
-#
-# Change History
-#
-# 1.1 (?)
-#   - extracts sequence number from original filename, without them,
-#     the files are too hard to identify
-#
-# 6.0 (1/2007)
-#   - used EXIFTools perl library to read and parse exif time
-#   - more clean up
-#
-# 6.2 (2/5/2007)
-#   - general code clean up, moved blocks into subroutines
-#   - max filename length used in all messages
-#   - removed current directory check
-#   - moved check for file exist / directory in glob() block
-#
-# 6.3 (10/17/2007)
-#   - take Canon 40d "2007:10:06 10:52:15+08:00" type exif timestamp
-#
-# 6.31 (1/17/2008)
-#   - relaxed already generated filename matching rule
-#
-# 6.32 (7/8/2010)
-#   - force 4 chars for seq NNNN. GF1's NNN is too many digits
-#
-# 6.33 (10/26/2010)
-#   - force 4 chars works for already processed files
-#
-# 7.00 (03/18/2011)
-#   - support for rename pcm-m10 files YYMMDD_NN.mp3
-#   - split qren.pl into multiple modules for better organization!
-#   - fixed missing newline when exif failed to extract time
-#   - turn off exif time reading for mp3/wav/flac files
-#
-# 7.01 (04/19/2011)
-#   - updated display of 1-line info for image/video
-#   - tested with new exiftool that parses .mts!!
-#
-# 7.02 (05/09/2011)
-#   - display and clear rotation setting via -c
-#   - extract out embedded thumbnail into .thm via -b
-#   - tested/updated with iphone4 jpg/mov files
-#
-# 7.10 (01/03/2012)
-#   - changed 'switch' to given/when
-#   - added -s to process files into subdirs automatically
-#   - pass hash/array by reference using \ for efficiency
-#   - removed & from function invocation.
-#   - rename MMYYDDHHMM files from LG phones
-#
-# 7.11 (03/16/2012)
-#   - handle both -/_ as field separator in filename timestamp
-#
-# 7.20 (10/04/2012)
-#   - Rename Galaxy S3 YYYYMMDD_HHMMSS.jpg files
-#   - auto generate tag to use from exif data
-#   - able to reprocess file if seq length is not 4 for images
-#   - improved focal/35mm-eq output with -i for iphone/galaxys3
-#
-# 7.30 (11/19/2014)
-#   - rename vuescan files from film scanners
-#
-# 7.35 (02/20/2015)
-#   - tested and fixed bugs on mac 10.9/10.10
-#   - disable experimental warning on perl 5.18+ (mac 10.10)
-#   - used File::Spec to join path for subdir file move
-#   - update tags for rebel
-#   - synced with home code
-#   - output perl version/os on help screen
-#
-# 7.36 (08/22/2017)
-#   - updated to run under strawberry perl v5.26
-#   - removed experimental given/when, simplified imports.
-#
-######################################################################
+
+v7.40  (08/25/2017)
+- moved constants to Const.pm, used main() function
+- automatically find include path for local modules
+- store configuration in qren.yaml file, -g to print
+- auto process iphone tags
+- add executable bit to qren.pl
+- update -e to support appending to generated tags.
+- minor code cleanup, uses 'unless'.
+
+v7.36  (08/22/2017)
+- updated to run under strawberry perl v5.26
+- removed experimental given/when, simplified imports.
+
+v7.35  (02/20/2015)
+- tested and fixed bugs on mac 10.9/10.10
+- disable experimental warning on perl 5.18+ (mac 10.10)
+- used File::Spec to join path for subdir file move
+- update tags for rebel
+- synced with home code
+- output perl version/os on help screen
+
+v7.30  (11/19/2014)
+- rename vuescan files from film scanners
+
+v7.20  (10/04/2012)
+- Rename Galaxy S3 YYYYMMDD_HHMMSS.jpg files
+- auto generate tag to use from exif data
+- able to reprocess file if seq length is not 4 for images
+- improved focal/35mm-eq output with -i for iphone/galaxys3
+
+v7.11  (03/16/2012)
+- handle both -/_ as field separator in filename timestamp
+
+v7.10  (01/03/2012)
+- changed 'switch' to given/when
+- added -s to process files into subdirs automatically
+- pass hash/array by reference using \ for efficiency
+- removed & from function invocation.
+- rename MMYYDDHHMM files from LG phones
+
+v7.02  (05/09/2011)
+- display and clear rotation setting via -c
+- extract out embedded thumbnail into .thm via -b
+- tested/updated with iphone4 jpg/mov files
+
+v7.01  (04/19/2011)
+- updated display of 1-line info for image/video
+- tested with new exiftool that parses .mts!!
+
+v7.00  (03/18/2011)
+- support for rename pcm-m10 files YYMMDD_NN.mp3
+- split qren.pl into multiple modules for better organization!
+- fixed missing newline when exif failed to extract time
+- turn off exif time reading for mp3/wav/flac files
+
+v6.33  (10/26/2010)
+- force 4 chars works for already processed files
+
+v6.32  (7/8/2010)
+- force 4 chars for seq NNNN. GF1's NNN is too many digits
+
+v6.31  (1/17/2008)
+- relaxed already generated filename matching rule
+
+v6.30  (10/17/2007)
+- take Canon 40d "2007:10:06 10:52:15+08:00" type exif timestamp
+
+v6.20  (2/5/2007)
+- general code clean up, moved blocks into subroutines
+- max filename length used in all messages
+- removed current directory check
+- moved check for file exist / directory in glob() block
+
+v6.00  (1/2007)
+- used EXIFTools perl library to read and parse exif time
+- more clean up
+
+v1.10  (?)
+- extracts sequence number from original filename, without them,
+  the files are too hard to identify.
