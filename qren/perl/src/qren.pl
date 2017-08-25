@@ -51,7 +51,7 @@ sub main
     Args::process_args();
 
     # read config file and setup variables
-    Const::read_config();
+    Const::read_config($Args::parm_show_config);
 
     # figure out the maximum input filename length
     $max_filename = Util::max_string(\@Args::files);

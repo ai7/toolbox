@@ -19,6 +19,7 @@ our $parm_pcd_d = "";        # date
 our $parm_simulate = 0;      # simulate operation
 our $parm_prompt = 0;        # confirm each operation
 our $parm_clr_orien = 1;     # clear exif orientation value
+our $parm_show_config = 0;   # show configuration content
 our @files;                  # list of files to process
 
 # local vars
@@ -53,7 +54,8 @@ my $usage_help =
     "    -d<date>   date as YYYYMMDD     [-k/-a]\n" .
     "\n" .
     "  -p           Ask the user to confirm each file.\n" .
-    "  -n           Do nothing. Simulate the operation.\n";
+    "  -n           Do nothing. Simulate the operation.\n".
+    "  -g           Show configuration file content.\n";
 
 
 # called by getopt and my print_usage
@@ -160,9 +162,17 @@ sub process_args
         elsif ($i =~ /^p$/i) {     # prompt mode
             $parm_prompt = 1;
         }
+        elsif ($i =~ /^g$/i) {     # show configuration info
+            $parm_show_config = 1;
+        }
         else {
             print_usage();
         }
+    }
+
+    # if show config, return, don't check/show help page
+    if ($parm_show_config) {
+        return
     }
 
     # must specify one of the modes, or a file to process

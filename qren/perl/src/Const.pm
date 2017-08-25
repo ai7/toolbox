@@ -10,7 +10,7 @@ use warnings;
 # standard perl modules
 use File::Basename;
 use YAML::XS 'LoadFile';
-# use Data::Dumper;
+use Data::Dumper;
 
 ######################################################################
 
@@ -41,10 +41,16 @@ our @tag_trim;     # value to removed from exif Model field to generate tag
 # read from config file and set module variables.
 sub read_config
 {
+    my ($show_config) = (@_);
+
     # read yaml file, so simple!
     my $fn = File::Spec->join(dirname(__FILE__), 'qren.yaml');
     my $config = LoadFile($fn);
-    # print Dumper($config);
+
+    if ($show_config) {
+        print Dumper($config);
+        exit;
+    }
 
     # assign fields to module variables
     $pat_rename  = $config->{'filename'}->{'rename'};

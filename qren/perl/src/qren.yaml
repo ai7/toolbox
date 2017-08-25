@@ -53,15 +53,15 @@ tag:
         Canon PowerShot SD1200 IS: sd1200
         COOLPIX L12: L12
         FinePix XP70 XP71 XP75: xp70
-        iPhone 6 Plus: iphone6p
-        iPhone 6s Plus: iphone6sp
         Canon EOS DIGITAL REBEL XTi: rebel_xti
-        # "NIKON D90", "d90",
-        # "NIKON D70", "d70",
-        # "DMC-GF1", "gf1",
-        # "iPhone 4", "iphone4",
-        # "Canon PowerShot S90", "s90",
-        # "Canon PowerShot SD500", "sd500",
+        # iPhone 4: iphone4
+        # iPhone 6 Plus: iphone6p
+        # iPhone 6s Plus: iphone6sp
+        # NIKON D70: d70
+        # NIKON D90: d90
+        # DMC-GF1: gf1
+        # Canon PowerShot S90: s90
+        # Canon PowerShot SD500: sd500
 
     # value that should be removed from exif Model field to generate tag
     trim:

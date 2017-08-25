@@ -136,28 +136,51 @@ sub extract_make
 }
 
 
+# change "iPhone xx Plus" -> "iphonexxp"
+sub process_iphone_tag
+{
+    my ($model) = @_;
+
+    # Can't encode the replacement string into variable (and therefore
+    # can't store this as constants or in config files). It will
+    # require using eval to make it work which is dangerious.
+
+    # "iphone xx plus" -> "iphonexxp"
+    $model =~ s/^iPhone ([\ds]+)[ ]*(Plus)$/iphone$1p/i;
+
+    return $model;
+}
+
+
 # figure out the tag to use based on the model field in the exif
 # tag is a short concise id representing the camera
 sub auto_generate_tag
 {
-    my ($info) = @_;
+    my ($info, $make) = @_;
     my $model = $info->{Model};
     my $tag;
 
     if (defined $model) {
-        # do we have a predefined value for this Model?
-        # if not, will trying to construct a tag automatically
+        # if we have a predefined value for this Model, use it.
+        # otherwise, try to generate one.
         $tag = $Const::tag_lookup{$model};
-        if (!defined $tag) {
-            # first remove branding strings
-            for my $remove_str (@Const::tag_trim) {
-                $model =~ s/$remove_str//i;
-            }
-            # remove whitespace from string
-            $model =~ s/\s+//;
-            # lowercase all chars
-            $tag = lc($model);
+        if (defined $tag) {
+            return $tag;
         }
+
+        # handle iphone tags, do this before any trim so matching is
+        # more accurate.
+        if ($make == 5) {
+            $model = process_iphone_tag($model);
+        }
+        # remove branding strings
+        for my $remove_str (@Const::tag_trim) {
+            $model =~ s/$remove_str//i;
+        }
+        # remove whitespace from string
+        $model =~ s/\s+//;
+        # lowercase all chars
+        $tag = lc($model);
     }
 
     return $tag;
@@ -186,7 +209,7 @@ sub extract_exiftime
     my $datetime = $info->{DateTimeOriginal};
     my $make = extract_make($info);
     # generate an automatic tag based on exif info
-    my $tag = auto_generate_tag($info);
+    my $tag = auto_generate_tag($info, $make);
     if (!defined $tag) {
         print "no {Model} ";
     }
