@@ -1,6 +1,10 @@
 # Lines that start with '#' are comments.
 
 *~
+*.pyc
+*.log
 *.[oa]
 
 /build/
+
+.DS_Store
