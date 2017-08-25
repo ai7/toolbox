@@ -5,6 +5,8 @@
 *.log
 *.[oa]
 
-/build/
+# ignore any build directory from this level down
+build/
 
+# ignore mac Desktop Services Store files
 .DS_Store
