@@ -173,7 +173,7 @@ sub generate_new_filename
         # extract exif timestamp as 2006:09:21 16:23:32
         # also get the auto generated tag to use
         my ($exif_time_string, $gtag) = Util::extract_exiftime($filename);
-        if (! defined $exif_time_string) {
+        unless (defined $exif_time_string) {
             print "no EXIF time! ";
             return;
         }
@@ -201,7 +201,7 @@ sub generate_new_filename
         my @fstat = stat($filename);
         $new_time = check_min_time($fstat[9], 0);
     }
-    return if (! defined $new_time);
+    return unless (defined $new_time);
 
     my $timestr = strftime("%Y%m%d_%H%M%S", localtime($new_time));
     $new_name = "$timestr\_$seq$tag$ext";
@@ -416,7 +416,7 @@ sub rename_file
         }
     }
 
-    if (! $Args::parm_simulate) {
+    unless ($Args::parm_simulate) {
         # make sure the target does not exist because rename will kill it
         # not losing file is of utmost importance
         if (-f $newname) {
@@ -449,7 +449,7 @@ sub touch_file
     $filename =~ s/\s+$//;
 
     # return if not an ordinary file
-    if (! -f $filename) {
+    unless (-f $filename) {
         return;
     }
 
@@ -483,7 +483,7 @@ sub touch_file
         }
     }
 
-    if (! $Args::parm_simulate) {
+    unless ($Args::parm_simulate) {
         my $ret = Util::my_touch($filename, $new_time);
         if ($ret == 1) {
             print " [touch failed]";
@@ -656,7 +656,7 @@ sub display_image_info_short
 
     # get shutter speed
     my $shutter = $info->{ShutterSpeed};
-    $shutter = $info->{ShutterSpeedValue} if (!defined $shutter);
+    $shutter = $info->{ShutterSpeedValue} unless (defined $shutter);
     $output .= ", $shutter" if (defined $shutter);
 
     # get the focal length
@@ -793,19 +793,19 @@ sub display_video_info_short
 
     # get audio sample rate
     my $audio_rate = $info->{SampleRate};
-    $audio_rate = $info->{AudioSampleRate} if (!defined $audio_rate);
+    $audio_rate = $info->{AudioSampleRate} unless (defined $audio_rate);
     $output .= ", $audio_rate" . "hz"  if (defined $audio_rate);
 
     # get audio channels
     my $audio_chan = $info->{AudioChannels};
-    $audio_chan = $info->{NumChannels} if (!defined $audio_chan);
-    $audio_chan = $info->{Channels} if (!defined $audio_chan);
+    $audio_chan = $info->{NumChannels} unless (defined $audio_chan);
+    $audio_chan = $info->{Channels} unless (defined $audio_chan);
     $output .= "/$audio_chan" . "c" if (defined $audio_chan);
 
     # get audio bit sample
     my $audio_bits = $info->{AudioBitsPerSample};
-    $audio_bits = $info->{BitsPerSample} if (!defined $audio_bits);
-    $audio_bits = $info->{AudioBitrate} if (!defined $audio_bits);
+    $audio_bits = $info->{BitsPerSample} unless (defined $audio_bits);
+    $audio_bits = $info->{AudioBitrate} unless (defined $audio_bits);
     if (defined $audio_bits) {
         $output .= "/$audio_bits";
         if ($audio_bits !~ /\D/) { # add 'bit' if digits only
@@ -814,7 +814,7 @@ sub display_video_info_short
     }
 
     my $model = $info->{Model};
-    $model = $info->{Make} if (!defined $model);
+    $model = $info->{Make} unless (defined $model);
     $output .= ", $model" if (defined $model);
 
     printf("%-*s: %s\n", $max_filename, $filename, $output);
@@ -828,7 +828,7 @@ sub clear_exif_orientation
     my ($filename) = @_;
 
     # return if not an ordinary file
-    if (! -f $filename) {
+    unless (-f $filename) {
         return;
     }
 
@@ -845,7 +845,7 @@ sub clear_exif_orientation
 
     # get the current orientation
     my $orientation = get_orientation($info);
-    if (!defined $orientation) {
+    unless (defined $orientation) {
         printf("missing orientation setting");
         $skipped++;
         goto finish;
@@ -864,7 +864,7 @@ sub clear_exif_orientation
     # process, make sure don't process on d90 files, for example
 
     # prompts the user if needed
-    if (! Util::get_confirm()) {
+    unless (Util::get_confirm()) {
         $skipped++;
         goto finish;
     }
@@ -879,7 +879,7 @@ sub clear_exif_orientation
     }
 
     my $newname = $filename . ".new";
-    if (! $Args::parm_simulate) {
+    unless ($Args::parm_simulate) {
         $status = $exifTool->WriteInfo($filename, $newname);
         if ($status != 1) {
             printf("failed (%d): %s", $status,
@@ -905,7 +905,7 @@ sub extract_thumb_image
     my ($filename) = @_;
 
     # return if not an ordinary file
-    if (! -f $filename) {
+    unless (-f $filename) {
         return;
     }
 
@@ -931,13 +931,13 @@ sub extract_thumb_image
     }
 
     # prompts the user if needed
-    if (! Util::get_confirm()) {
+    unless (Util::get_confirm()) {
         $skipped++;
         goto finish;
     }
 
     # now write the output file
-    if (! $Args::parm_simulate) {
+    unless ($Args::parm_simulate) {
         open OUT, ">$outfile";
         binmode OUT;
         print OUT ${$$info{ThumbnailImage}};
@@ -1019,7 +1019,7 @@ sub create_folders
             }
         }
 
-        if (! $Args::parm_simulate) {
+        unless ($Args::parm_simulate) {
             if (! -d $dir) {
                 if (!mkdir($dir)) {
                     print " [mkdir failed]";
@@ -1068,7 +1068,7 @@ sub move_files
                 }
             }
 
-            if (! $Args::parm_simulate) {
+            unless ($Args::parm_simulate) {
                 # make sure the target does not exist because rename will kill it
                 # not losing file is of utmost importance
                 if (-f $newname) {
