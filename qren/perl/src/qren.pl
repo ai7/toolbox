@@ -1,4 +1,4 @@
-#!/usr/local/bin/perl
+#!/usr/bin/env perl
 
 # This program renames files to YYYYMMDD_HHMMSS_NNNN.ext
 # based on the file timestamp and sequence number in the filename.
