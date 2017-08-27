@@ -97,11 +97,9 @@ sub execute_commands
     elsif ($Args::parm_mode == 4) {  # pictureCD1
         # verify roll and date specified for picturecd
         if ($Args::parm_pcd_n == 0) {
-            print "Error: roll number \"-x<XXXX>\" must be specified for -k!\n";
-            exit;
+            die "Error: roll number \"-x<XXXX>\" must be specified for -k!\n";
         } elsif ($Args::parm_pcd_d eq "") {
-            print "Error: date \"-d<YYYYMMDD>\" must be specified for -a\n";
-            exit;
+            die "Error: date \"-d<YYYYMMDD>\" must be specified for -a\n";
         }
         $operation = "renamed";
         for my $f (@Args::files) {
@@ -112,8 +110,7 @@ sub execute_commands
     elsif ($Args::parm_mode == 5) {  # pictureCD2
         # verify roll or date specified for picturecd reprocess
         if ($Args::parm_pcd_n == 0 && $Args::parm_pcd_d eq "") {
-            print "Error: -x AND/OR -d must be specified for -a\n";
-            exit;
+            die print "Error: -x AND/OR -d must be specified for -a\n";
         }
         $operation = "renamed";
         for my $f (@Args::files) {
@@ -142,11 +139,9 @@ sub execute_commands
 
     elsif ($Args::parm_mode == 9) {  # rename scan files
         if ($Args::parm_pcd_n == 0) {
-            print "Error: roll number \"-x<XXX>\" must be specified for -q!\n";
-            exit;
+            die "Error: roll number \"-x<XXX>\" must be specified for -q!\n";
         } elsif ($Args::parm_pcd_d eq "") {
-            print "Error: date \"-d<YYYYMMDD>\" must be specified for -q\n";
-            exit;
+            die "Error: date \"-d<YYYYMMDD>\" must be specified for -q\n";
         }
         $operation = "renamed";
         for my $f (@Args::files) {
@@ -244,8 +239,7 @@ sub rename_file
     my ($filename) = @_;
 
     # removes any begin and trailing blanks
-    $filename =~ s/^\s+//;
-    $filename =~ s/\s+$//;
+    $filename =~ s/^\s+|\s+$//g;
 
     printf("%-*s => ", $max_filename, $filename);
 
@@ -445,8 +439,7 @@ sub touch_file
     my ($filename) = @_;
 
     # removes any begin and trailing blanks
-    $filename =~ s/^\s+//;
-    $filename =~ s/\s+$//;
+    $filename =~ s/^\s+|\s+$//g;
 
     # return if not an ordinary file
     unless (-f $filename) {

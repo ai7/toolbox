@@ -28,7 +28,7 @@ my @options;                 # list of cmd line flags
 my $argv0 = $0;              # executable name
 
 my $usage_ver =
-    "Q-Rename 7.4.0 [Perl/$^O $^V, 2017-08-25]\n" .
+    "Q-Rename 7.4.0 [Perl/$^O $^V, 2017-08-27]\n" .
     "(c) 2002-2017 by Raymond Chi, all rights reserved.\n";
 
 my $usage_help =
@@ -94,7 +94,7 @@ sub process_args
         } else {
             for my $f (glob($i)) {
                 if (! -e $f) {
-                    print("$f: file not found!\n");
+                    print "$f: file not found!\n";
                     $qren::failed++;
                 } else {
                     # skip directories

@@ -21,8 +21,7 @@ sub verify_date
 {
     my ($date) = @_;
     if ($date !~ /^(\d{8})$/) {
-        print "Error: date for /d must be in YYYYMMDD format - `$date\'\n";
-        exit;
+        die "Error: date for /d must be in YYYYMMDD format - `$date\'\n";
     }
     return $date;
 }
@@ -32,8 +31,7 @@ sub verify_roll
 {
     my ($roll) = @_;
     if ($roll !~ /^(\d+)$/) {
-        print "Error: roll for /x must be in NNNN format - `$roll\'\n";
-        exit;
+        die "Error: roll for /x must be in NNNN format - `$roll\'\n";
     }
     return $roll;
 }
@@ -52,8 +50,7 @@ sub verify_offset
             $offset_sec *= -1;
         }
     } else {
-        print "Error: offset for /o must be in [-]h:m:s format - `$offset\'\n";
-        exit;
+        die "Error: offset for /o must be in [-]h:m:s format - `$offset\'\n";
     }
     return $offset_sec;
 }
@@ -67,8 +64,7 @@ sub verify_tag
     if ($tag =~ /^(\w*)$/) {
         return ($1) ? "_$tag" : "";
     } else {
-        print "Error: tag must be alpha-numeric - `$tag\'\n";
-        exit;
+        die "Error: tag must be alpha-numeric - `$tag\'\n";
     }
 }
 
@@ -90,8 +86,7 @@ sub convert_timestamp_file
         # works with actual YYYY format (for year > 999)
         return timelocal($sec, $min, $hour, $day, $mon - 1, $year);
     } else {
-        print "timestamp not in expected format! - $string\n";
-        exit;
+        die "timestamp not in expected format! - $string\n";
     }
 }
 
@@ -110,8 +105,7 @@ sub convert_timestamp_exif
         # works with actual YYYY format (for year > 999)
         return timelocal($sec, $min, $hour, $day, $mon - 1, $year);
     } else {
-        print "exif timestamp not in expected format! - $string\n";
-        exit;
+        die "exif timestamp not in expected format! - $string\n";
     }
 }
 

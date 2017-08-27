@@ -18,8 +18,7 @@ sub rename_picturecd1
     my ($filename) = @_;
 
     # removes any begin and trailing blanks
-    $filename =~ s/^\s+//;
-    $filename =~ s/\s+$//;
+    $filename =~ s/^\s+|\s+$//g;
 
     printf("%-*s => ", $qren::max_filename, $filename);
 
@@ -79,8 +78,7 @@ sub rename_picturecd2
     my ($filename) = @_;
 
     # removes any begin and trailing blanks
-    $filename =~ s/^\s+//;
-    $filename =~ s/\s+$//;
+    $filename =~ s/^\s+|\s+$//g;
 
     printf("%-*s => ", $qren::max_filename, $filename);
 
@@ -158,8 +156,7 @@ sub rename_scanned
     my ($filename) = @_;
 
     # removes any begin and trailing blanks
-    $filename =~ s/^\s+//;
-    $filename =~ s/\s+$//;
+    $filename =~ s/^\s+|\s+$//g;
 
     printf("%-*s => ", $qren::max_filename, $filename);
 
