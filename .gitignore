@@ -10,3 +10,6 @@ build/
 
 # ignore mac Desktop Services Store files
 .DS_Store
+
+# ignore SCons db
+.sconsign.dblite

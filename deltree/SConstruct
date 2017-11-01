@@ -1,0 +1,28 @@
+# SConstruct file for deltree
+#
+# use array [] for flags so don't need to add space in front of flag
+# for append.
+
+
+# create the environment to build our program, with settings
+# that applies to all builds
+env = Environment(CCFLAGS=['-Wall'],
+                  CPPDEFINES=['_UNICODE', 'UNICODE'],
+                  LINKFLAGS=['-municode'])
+# print(env.Dump())
+
+
+# check whether debug/release build
+debug = ARGUMENTS.get('debug', 0)
+if int(debug):
+    env.Append(CCFLAGS=['-g'])  # enable debug symbols
+else:
+    env.Append(CCFLAGS=['-O6'])  # enable optimization
+    env.Append(LINKFLAGS=['-s'])  # strip symbols
+
+
+# now set the program we want to build
+# todo: set debug/release build
+env.Program(target = 'build/deltree',
+            source = ['deltree.c'],
+            srcdir = 'src')
