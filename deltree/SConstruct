@@ -26,3 +26,12 @@ else:
 env.Program(target = 'build/deltree',
             source = ['deltree.c'],
             srcdir = 'src')
+
+REL_VERSION = 'v1.0.2'  # todo: read from deltree.c directly?
+
+# create the zip file
+z = Zip('build/deltree-%s.zip' % REL_VERSION,
+        'build/deltree.exe',
+        ZIPROOT='build')
+
+Alias('zip', z)
