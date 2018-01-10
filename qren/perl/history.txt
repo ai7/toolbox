@@ -2,6 +2,15 @@
                     Raymond Chi <raychi@gmail.com>
 
 
+v7.41  (01/02/2018)
+- added timestamp section to yaml file to specify exif fields for
+  regular jpg and png/mov files.
+- updated code to use timestamp fields specified in yaml file to
+  better handle iphone png and mov files. mov files is now local time
+  (instead of utc time that requires offset), and png files have their
+  original timestamp even though the file modification time could be
+  changed by iphone for some strange reason.
+
 v7.40  (08/25/2017)
 - moved constants to Const.pm, used main() function
 - automatically find include path for local modules

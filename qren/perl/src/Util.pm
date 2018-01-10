@@ -181,13 +181,33 @@ sub auto_generate_tag
 }
 
 
+# given an exif INFO object and a list of fields,
+# return the first field that contains data
+sub get_field_helper
+{
+    my ($info, $fields) = @_;
+    my $retval;
+
+    # first get the time using the standard fields
+    for my $field (@{$fields}) {
+        $retval = $info->{$field};
+        if (defined $retval) {
+            last;
+        }
+    }
+
+    return $retval;
+}
+
+
 # extract the DateTimeOriginal field from EXIF data and return it as a
 # string in the format 2006:09:21 16:02:32
 sub extract_exiftime
 {
-    my ($filename) = @_;
+    my ($filename, $ext) = @_;
 
     my $info = &Image::ExifTool::ImageInfo($filename);
+    my $datetime;
 
     if (defined $info->{Error}) {
         print "$info->{Error}! ";
@@ -199,17 +219,24 @@ sub extract_exiftime
         #return;
     }
 
-    # Do not use FileModifyDate as this must extract the exif date, if any
-    my $datetime = $info->{DateTimeOriginal};
-    my $make = extract_make($info);
+    # first get the time using the standard fields
+    $datetime = get_field_helper($info, \@Const::time_std);  # pass by ref
+
+    # if no timestamp, resort to the extension specific rules
+    if (!defined $datetime) {
+        # Do this only for iphone PNG file?
+        if ($ext =~ /png$/i) {
+            $datetime = get_field_helper($info, \@Const::time_png);
+        } elsif ($ext =~ /mov$/i) {
+            $datetime = get_field_helper($info, \@Const::time_mov);
+        }
+    }
+
     # generate an automatic tag based on exif info
+    my $make = extract_make($info);
     my $tag = auto_generate_tag($info, $make);
     if (!defined $tag) {
         print "no {Model} ";
-    }
-
-    if (!defined $datetime && $make == 5) {
-        $datetime = $info->{CreateDate};
     }
 
     return ($datetime, $tag);

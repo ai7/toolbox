@@ -167,7 +167,7 @@ sub generate_new_filename
     if ($use_exif) {
         # extract exif timestamp as 2006:09:21 16:23:32
         # also get the auto generated tag to use
-        my ($exif_time_string, $gtag) = Util::extract_exiftime($filename);
+        my ($exif_time_string, $gtag) = Util::extract_exiftime($filename, $ext);
         unless (defined $exif_time_string) {
             print "no EXIF time! ";
             return;
@@ -184,7 +184,11 @@ sub generate_new_filename
             # or not.
             if ($Args::parm_tag_append) {
                 # if append mode, add it to the auto generated tag
-                $tag = "_$gtag$Args::parm_tag";
+                if (defined $gtag) {
+                    $tag = "_$gtag$Args::parm_tag";
+                } else {
+                    $tag = "$Args::parm_tag";
+                }
             }
             # else do nothing, use current tag value
         }
@@ -361,7 +365,7 @@ sub rename_file
         if (defined $Args::parm_tag) {
             $tag = $Args::parm_tag;
         } else {
-            my ($exif_time_string, $gtag) = Util::extract_exiftime($filename);
+            my ($exif_time_string, $gtag) = Util::extract_exiftime($filename, $ext);
             $tag = ($gtag) ? "_$gtag" : "";
         }
 

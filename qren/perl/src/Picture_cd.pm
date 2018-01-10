@@ -173,7 +173,7 @@ sub rename_scanned
         my $seq = sprintf("%.3d", $seq1);
 
         my $tag = "";
-        my ($exif_time_string, $gtag) = Util::extract_exiftime($filename);
+        my ($exif_time_string, $gtag) = Util::extract_exiftime($filename, $ext);
         if (!defined $Args::parm_tag && $gtag) {
             # tag is not specified on the command line, use the auto
             # generated tag name based on the exif Model field.

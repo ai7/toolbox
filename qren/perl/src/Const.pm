@@ -31,6 +31,9 @@ our $exif_off_ext; # turn exif off
 our %tag_lookup;   # hash of Model -> tags for auto tag generation
 our @tag_trim;     # value to removed from exif Model field to generate tag
 
+our @time_std;     # default exif time fields
+our @time_png;     # exif time fields for iphone png files
+our @time_mov;     # exif time fields for iphone mov files
 
 ######################################################################
 
@@ -67,6 +70,10 @@ sub read_config
 
     %tag_lookup  = %{$config->{'tag'}->{'lookup'}};  # dereference
     @tag_trim    = @{$config->{'tag'}->{'trim'}};    # dereference
+
+    @time_std    = @{$config->{'timestamp'}->{'std'}};  # dereference
+    @time_png    = @{$config->{'timestamp'}->{'png'}};  # dereference
+    @time_mov    = @{$config->{'timestamp'}->{'mov'}};  # dereference
 }
 
 

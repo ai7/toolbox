@@ -43,6 +43,27 @@ extension:
     exif_off: (mp3)|(wav)|(flac)
 
 
+# what exif timestamp fields to read for various files
+timestamp:
+
+    # general default
+    # DateTimeOriginal: 2017:12:19 08:55:23
+    std:
+        - DateTimeOriginal
+
+    # iphone png files
+    # DateCreated: 2017:12:18 18:07:12
+    png:
+        - DateCreated
+
+    # iphone mov files
+    # CreationDate: 2017:12:21 16:42:25-07:00
+    # CreateDate: 2017:12:21 23:42:29
+    mov:
+        - CreationDate
+        - CreateDate
+
+
 # tag handling in filenames
 tag:
 
