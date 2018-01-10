@@ -17,7 +17,8 @@ BEGIN {
     # regex pattern for the timestamp garmin outputs
     # 05-JUL-13 16:34:05
     # the hour can be one digit, so we group it separately
-    p_date = "([0-9]{2})-([a-zA-Z]{3})-([0-9]{2}) ([0-9]{1,2}):([0-9]{2}:[0-9]{2})"
+    # p_date = "([0-9]{2})-([a-zA-Z]{3})-([0-9]{2}) ([0-9]{1,2}):([0-9]{2}:[0-9]{2})"
+    p_date = "(\d{2})-([a-zA-Z]{3})-(\d{2}) (\d{1,2}):(\d{2}:\d{2})"
 
     # create the month['jan'] = '01' ... array
     build_month()
