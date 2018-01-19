@@ -39,7 +39,7 @@ ifeq ("$(TARGET)","debug")
     LDFLAGS  = -municode
 else
     CFLAGS   = -Wall -O6 $(addprefix -I,$(INCLUDE_DIRS))  $(CC_OPTS)
-    LDFLAGS  = -s -municode
+    LDFLAGS  = -s -municode -lshlwapi
 endif
 
 LOADLIBES = $(addprefix -L,$(LIB_DIRS))

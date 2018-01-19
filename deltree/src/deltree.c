@@ -11,7 +11,7 @@
 #include <conio.h>
 
 
-#define DELTREE_VER    L"1.0.2"
+#define DELTREE_VER    L"1.0.3"
 
 #ifndef FALSE
 #define FALSE          0
@@ -191,7 +191,7 @@ PromptUser(const wchar_t *path)
  * @param i index of current item in overall list
  * @return TRUE on success, FALSE otherwise.
  */
-BOOL
+Bool
 DeleteItem(const wchar_t *path,    // IN
            const AppInputs *args,  // IN
            int i)                  // IN
@@ -254,6 +254,60 @@ DeleteItem(const wchar_t *path,    // IN
 
 
 /**
+ * Check if a file/directory exists
+ *
+ * @param path path to delete
+ * @return TRUE on success, FALSE otherwise.
+ */
+Bool
+FileExists(const wchar_t *item)  // IN
+{
+    DWORD dw;
+    LPVOID lpMsgBuf;
+
+    // We have 3 APIs to check:
+    //
+    // !PathFileExists(item)
+    //   This is a shell API, but mingw-w64 have trouble linking it:
+    //   .../deltree.o:deltree.c:(.text+0x5a2): undefined reference to `__imp_PathFileExistsW'
+    //
+    // _waccess(item, 0) != 0)
+    //  This seems to have trouble with certain directory, for some reason
+    //   rm: reading directory ??Archiver?_: No such file or director
+    //   there's an extra character after 3rd ?, maybe that's why?
+    //
+    // GetFileAttributes(item)
+    //   hopefully this one works without fuss
+    if (GetFileAttributes(item) != INVALID_FILE_ATTRIBUTES) {
+        return TRUE;
+    }
+
+    dw = GetLastError();
+
+    // get the error message associated with error code
+    FormatMessage(FORMAT_MESSAGE_ALLOCATE_BUFFER | 
+                  FORMAT_MESSAGE_FROM_SYSTEM |
+                  FORMAT_MESSAGE_IGNORE_INSERTS,
+                  NULL,
+                  dw,
+                  MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
+                  (LPTSTR) &lpMsgBuf,
+                  0, NULL );
+
+    fwprintf_s(stderr, L"%ws: %ws", item, lpMsgBuf);
+
+    LocalFree(lpMsgBuf);
+
+    return FALSE;
+
+    // error handling for _waccess()
+    // wchar_t buf[512];
+    // _wcserror_s(buf, ARRAYSIZE(buf), errno);
+    // fwprintf_s(stderr, L"%ws: %ws\n", item, buf);
+}
+
+
+/**
  * entry point
  *
  * @param argc argv array length
@@ -284,10 +338,7 @@ wmain(int argc,
    for (i = 0; i < args.delSize; i++) {
       const wchar_t *item = argv[args.delList[i]];
       // check if path exists
-      if (_waccess(item, 0) != 0) {
-	 wchar_t buf[512];
-	 _wcserror_s(buf, ARRAYSIZE(buf), errno);
-         fwprintf_s(stderr, L"%ws: %ws\n", item, buf);
+      if (!FileExists(item)) {
          continue;
       }
       // get confirmation if necessary
