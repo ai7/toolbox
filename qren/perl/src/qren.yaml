@@ -11,6 +11,9 @@ filename:
     # pattern for renaming standard digital camera files
     rename:  ^([a-zA-Z_]*)(\d+)([a-zA-Z]*)(\..*)$
 
+    # temporary for iphone files: IMG_0211 1.JPG
+    # rename:  ^([a-zA-Z_]*)(\d+)([a-zA-Z 1]*)(\..*)$
+
     # pattern for already renamed files (using either _ or - as divider)
     already: (\d{8}[_-]\d{6})[_-](\d+)([_-]([\w \+-]+))?(\..*)$
 
