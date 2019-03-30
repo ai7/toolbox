@@ -1,0 +1,11 @@
+# Ignore Gradle project-specific cache directory
+.gradle
+
+# Ignore Gradle build output directory
+build
+
+# ignore gradle wrapper files
+# https://stackoverflow.com/questions/20348451/why-should-the-gradle-wrapper-be-committed-to-vcs
+gradlew
+gradlew.bat
+gradle
