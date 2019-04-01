@@ -12,6 +12,12 @@ plugins {
 
     // Apply the application plugin to add support for building an application
     id 'application'
+
+    // lombok support
+    id "io.freefair.lombok" version "3.2.0"
+
+    // spring framework
+    // id 'org.springframework.boot' version '2.1.3.RELEASE'
 }
 
 repositories {
@@ -26,6 +32,12 @@ dependencies {
 
     // Use JUnit test framework
     testImplementation 'junit:junit:4.12'
+
+    // command line parsing
+    compile 'info.picocli:picocli:4.0.0-alpha-1'
+
+    // exif library
+    compile 'com.drewnoakes:metadata-extractor:2.11.0'
 }
 
 // Define the main class for the application
