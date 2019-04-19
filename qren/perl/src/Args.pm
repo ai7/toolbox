@@ -27,8 +27,10 @@ our @files;                  # list of files to process
 my @options;                 # list of cmd line flags
 my $argv0 = $0;              # executable name
 
+my $exifver = Image::ExifTool->VERSION();
+
 my $usage_ver =
-    "Q-Rename 7.4.2 [Perl/$^O $^V, 2019-04-18]\n" .
+    "Q-Rename 7.4.2 [Perl/$^O $^V, ExifTool/v$exifver, 2019-04-19]\n" .
     "(c) 2002-2019 by Raymond Chi, all rights reserved.\n";
 
 my $usage_help =
