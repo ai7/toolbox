@@ -2,6 +2,10 @@
                     Raymond Chi <raychi@gmail.com>
 
 
+v7.42  (04/18/2019)
+- automatically add _owner to tag based on yaml config.
+- added lookup for various iphone X models.
+
 v7.41  (01/02/2018)
 - added timestamp section to yaml file to specify exif fields for
   regular jpg and png/mov files.

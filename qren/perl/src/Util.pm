@@ -237,11 +237,23 @@ sub extract_exiftime
     my $tag = auto_generate_tag($info, $make);
     if (!defined $tag) {
         print "no {Model} ";
+    } else {
+        # add owner info, if any
+        $tag = add_owner($tag);
     }
 
     return ($datetime, $tag);
 }
 
+sub add_owner
+{
+    my ($tag) = @_;
+    my $owner = $Const::tag_owner{$tag};
+    if (defined $owner) {
+        return "${tag}_${owner}";
+    }
+    return $tag;
+}
 
 # figure out the max string length from the list of strings
 sub max_string

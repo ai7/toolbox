@@ -28,8 +28,8 @@ my @options;                 # list of cmd line flags
 my $argv0 = $0;              # executable name
 
 my $usage_ver =
-    "Q-Rename 7.4.1 [Perl/$^O $^V, 2018-01-02]\n" .
-    "(c) 2002-2017 by Raymond Chi, all rights reserved.\n";
+    "Q-Rename 7.4.2 [Perl/$^O $^V, 2019-04-18]\n" .
+    "(c) 2002-2019 by Raymond Chi, all rights reserved.\n";
 
 my $usage_help =
     "\nUsage: $argv0 <options> <files...>\n\n" .

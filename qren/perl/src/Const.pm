@@ -29,6 +29,7 @@ our $video_ext;    # trigger video info for -i
 our $exif_off_ext; # turn exif off
 
 our %tag_lookup;   # hash of Model -> tags for auto tag generation
+our %tag_owner;    # hash of tag -> owner for auto tag generation
 our @tag_trim;     # value to removed from exif Model field to generate tag
 
 our @time_std;     # default exif time fields
@@ -69,6 +70,7 @@ sub read_config
     $exif_off_ext = $config->{'extension'}->{'exif_off'};
 
     %tag_lookup  = %{$config->{'tag'}->{'lookup'}};  # dereference
+    %tag_owner   = %{$config->{'tag'}->{'owner'}};   # dereference
     @tag_trim    = @{$config->{'tag'}->{'trim'}};    # dereference
 
     @time_std    = @{$config->{'timestamp'}->{'std'}};  # dereference

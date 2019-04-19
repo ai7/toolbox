@@ -78,6 +78,11 @@ tag:
         COOLPIX L12: L12
         FinePix XP70 XP71 XP75: xp70
         Canon EOS DIGITAL REBEL XTi: rebel_xti
+        # stupid iphone X names
+        iPhone X: iphoneX
+        iPhone XR: iphoneXr
+        iPhone XS: iphoneXs
+        iPhone XS Max: iphoneXsm
         # iPhone 4: iphone4
         # iPhone 6 Plus: iphone6p
         # iPhone 6s Plus: iphone6sp
@@ -94,3 +99,10 @@ tag:
         - PowerShot
         - DMC-
         - COOLPIX
+
+    # value to append after tag, ie: iphone6sp -> iphone6sp_ray
+    # TODO: see if there's a better identifier that we can use that won't
+    # confused same model from other people.
+    owner:
+        iphone6sp: ray
+        iphone6p: hy
