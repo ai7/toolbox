@@ -6,7 +6,7 @@
 # It is useful to convert files from digital camera to a more
 # meaningful name for archiving purposes
 
-# (c) 2002-2017 Raymond Chi <raymondc@cal.berkeley.edu>
+# (c) 2002-2019 Raymond Chi <raymondc@cal.berkeley.edu>
 
 package qren;
 
@@ -287,6 +287,13 @@ sub rename_file
 
         # force sequence length to be the last 4 digits
         $seq = substr($seq, -4) if (length($seq) > 4);
+
+        # add seq suffix
+        # if $1 ends in _e, add 'e' to end of sequence
+        # iphone Xr's portrait mode produces file such as IMG_E0393.JPG
+        if ($1 =~ /_[eE]$/) {
+            $seq .= "e";
+        }
 
         ($newname, $newtime) = generate_new_filename($filename, $seq, $ext,
                                                       $tag, $Args::parm_exiftime);

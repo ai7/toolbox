@@ -48,6 +48,36 @@ Installer that does who-knows-what to your system.
 Run `qren.pl` and it should not complain about any dependencies.
 
 ```
+Q-Rename 7.4.2 [Perl/MSWin32 v5.28.1, ExifTool/v11.37, 2019-04-19]
+(c) 2002-2019 by Raymond Chi, all rights reserved.
+
+Usage: qren.pl <options> <files...>
+
+<Options>
+
+  -i[d]        Display/dump EXIF information in files
+  -r           Rename files to YYYYMMDD_HHMMSS_NNNN[_tag].ext
+    -o<offset> time offset as [-]h:m:s                  [-r/-t]
+    -e[+]<tag> append to or set tag (default: auto)     [-r]
+    -f         use file timestamp instead of EXIF time  [-i/-r]
+    -y         re-process based on exif/file time       [-r]
+    -d<date>   manual date if exif/file time < 1995/03  [-r]
+  -t           Touch files based on timestamp in filename
+  -c[n]        Clear/set EXIF orientation flag
+  -b           Extract thumbnail image
+  -s           Move renamed files into YYYY_MM_DD sub-dirs
+
+  -q           Rename scan files from Scan-YYMMDD-NNNN.ext to
+                 <roll>_NN_<date>[_tag].ext [needs -x & -d]
+  -k           Rename PictureCD files from DDD_NNN.ext to
+                 <roll>_NNNN_<date>.ext [needs -x & -d]
+  -a           Rename XXXX_NNNN_YYYYMMDD.ext files [needs -x & -d]
+    -x<roll>   film roll ID as XXXX [-k/-a]
+    -d<date>   date as YYYYMMDD     [-k/-a]
+
+  -p           Ask the user to confirm each file.
+  -n           Do nothing. Simulate the operation.
+  -g           Show configuration file content.
 ```
 
 ### Mac
