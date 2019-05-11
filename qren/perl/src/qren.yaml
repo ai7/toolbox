@@ -15,10 +15,10 @@ filename:
     # rename:  ^([a-zA-Z_]*)(\d+)([a-zA-Z 1]*)(\..*)$
 
     # pattern for already renamed files (using either _ or - as divider)
-    already: (\d{8}[_-]\d{6})[_-](\d+)([_-]([\w \+-]+))?(\..*)$
+    already: (\d{8}[_-]\d{6})[_-](\d+[e]?)([_-]([\w \+-]+))?(\..*)$
 
     # already renamed files to process into subdirs
-    subdirs: ^(\d{4})(\d{2})(\d{2})_\d{6}_(\d+)(_([\w\+-]+))?(\..*)$
+    subdirs: ^(\d{4})(\d{2})(\d{2})_\d{6}_(\d+[e]?)(_([\w\+-]+))?(\..*)$
 
     # pattern for samsung galaxy s3 photos, 20120930_094102[(x)].jpg
     s3:      ^(\d{8}[_]\d{6})(\((\d+)\))?(\..*)$
@@ -104,5 +104,5 @@ tag:
     # TODO: see if there's a better identifier that we can use that won't
     # confused same model from other people.
     owner:
-        iphone6sp: ray
-        iphoneXr: hy
+        iphoneXr: rc
+        iphoneXsm: hy

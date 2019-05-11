@@ -319,7 +319,7 @@ sub rename_file
         my $tag = $3; # out group
 
         # force sequence length to be the last 4 digits if it is longer
-        $seq = substr($seq, -4)      if (length($seq) > 4);
+        # $seq = substr($seq, -4)      if (length($seq) > 4);
         # increase to 4 digits if image files and less than 4 digits
         $seq = sprintf("%.4d", $seq) if (length($seq) < 4 && $ext =~ /^\.($Const::image_ext)$/i);
 
