@@ -2,6 +2,10 @@
                     Raymond Chi <raychi@gmail.com>
 
 
+v7.43  (06/07/2019)
+- fix param handling of filenames with spaces in them.
+- added handling of xiaomi IMG_20180726_134426.jpg files.
+
 v7.42  (04/19/2019)
 - automatically add _owner to tag based on yaml config.
 - output ExifTool version in help screen.

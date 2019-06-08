@@ -30,7 +30,7 @@ my $argv0 = $0;              # executable name
 my $exifver = Image::ExifTool->VERSION();
 
 my $usage_ver =
-    "Q-Rename 7.4.2 [Perl/$^O $^V, ExifTool/v$exifver, 2019-04-19]\n" .
+    "Q-Rename 7.4.3 [Perl/$^O $^V, ExifTool/v$exifver, 2019-06-07]\n" .
     "(c) 2002-2019 by Raymond Chi, all rights reserved.\n";
 
 my $usage_help =
@@ -88,20 +88,28 @@ sub process_args
     # not using getopt because this is better, opt/file can interleave
     # args needs to directly follow flag, without space
 
+    # in regex [], only ^-]\ needs to be escaped!
+
     # do the initial parsing through the parameters
     for my $i (@ARGV) {
-        # check to see if it is an option
-        if ($i =~ /^[\-\/](.*)/) {
+        if ($i =~ /^[\-\/](.*)/) {  # if begins with - or /
             push(@options, $1);
-        } else {
-            for my $f (glob($i)) {
-                if (! -e $f) {
-                    print "$f: file not found!\n";
-                    $qren::failed++;
-                } else {
-                    # skip directories
-                    push(@files, $f) if (-f $f);
-                }
+            next;
+        }
+        if ($i !~ /[*?]/) {  # don't glob if no * or ? char
+            push(@files, $i) if (-f $i);  # skip directories
+            next;
+        }
+        # now glob, note that if param file has spaces in it, glob
+        # will break it up as 2 files. hopefully this won't happen too
+        # often.
+        for my $f (glob($i)) {
+            if (! -e $f) {
+                print "$f: file not found!\n";
+                $qren::failed++;
+            } else {
+                # skip directories
+                push(@files, $f) if (-f $f);
             }
         }
     }

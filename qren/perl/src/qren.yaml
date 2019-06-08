@@ -3,6 +3,9 @@
 # YAML is easy on the eyes, and no need to escape the \ char in our
 # regular expressions, making it the perfect choice for our needs.
 
+# regular expression tips:
+#   in [], only ^-]\ needs to be escaped!
+
 ---
 
 # regular expression patterns for matching filenames
@@ -10,6 +13,9 @@ filename:
 
     # pattern for renaming standard digital camera files
     rename:  ^([a-zA-Z_]*)(\d+)([a-zA-Z]*)(\..*)$
+
+    # pattern from xiaomi phones: IMG_20180726_134426.jpg
+    rename2: (\d{8}[_-]\d{6})(\..*)$
 
     # temporary for iphone files: IMG_0211 1.JPG
     # rename:  ^([a-zA-Z_]*)(\d+)([a-zA-Z 1]*)(\..*)$
@@ -78,6 +84,8 @@ tag:
         COOLPIX L12: L12
         FinePix XP70 XP71 XP75: xp70
         Canon EOS DIGITAL REBEL XTi: rebel_xti
+        Redmi Note 5: redmi_n5
+        Pixel 2 XL: pixel2xl
         # stupid iphone X names
         iPhone X: iphoneX
         iPhone XR: iphoneXr
@@ -106,3 +114,4 @@ tag:
     owner:
         iphoneXr: rc
         iphoneXsm: hy
+        pixel2xl: sharon

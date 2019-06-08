@@ -16,6 +16,7 @@ use Data::Dumper;
 
 
 our $pat_rename;   # renaming standard digital camera files
+our $pat_rename2;  # renaming standard digital camera files
 our $pat_already;  # pattern for already renamed files (using either _ or - as divider)
 our $pat_subdirs;  # already renamed files to process into subdirs
 
@@ -58,6 +59,7 @@ sub read_config
 
     # assign fields to module variables
     $pat_rename  = $config->{'filename'}->{'rename'};
+    $pat_rename2 = $config->{'filename'}->{'rename2'};
     $pat_already = $config->{'filename'}->{'already'};
     $pat_subdirs = $config->{'filename'}->{'subdirs'};
     $pat_s3      = $config->{'filename'}->{'s3'};

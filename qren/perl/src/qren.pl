@@ -40,7 +40,7 @@ our $max_filename = 0;  # maximum filename length
 # global vars
 my $min_valid_time = timelocal(0, 0, 0, 1, 2, 1995);  # Kodak DCS460
 my $operation;
-
+my $local_seq = 1;  # generated sequence
 
 ######################################################################
 
@@ -297,6 +297,20 @@ sub rename_file
 
         ($newname, $newtime) = generate_new_filename($filename, $seq, $ext,
                                                       $tag, $Args::parm_exiftime);
+
+
+    # xiaomi images: IMG_20180726_134426.jpg
+    } elsif ($filename =~ /$Const::pat_rename2/) {
+
+        # use timestamp from filename
+        my $filename_time = Util::convert_timestamp_file($1);
+        my $seq = sprintf("%.4d", $local_seq++);  # generate seq number
+        my $ext = $2;
+        my $tag = ($Args::parm_tag) ? $Args::parm_tag : "";
+
+        ($newname, $newtime) = generate_new_filename($filename, $seq, $ext,
+                                                      $tag, $Args::parm_exiftime);
+
 
     } elsif ($filename =~ /$Const::pat_voice/) {
 
