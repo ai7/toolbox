@@ -2,6 +2,10 @@
                     Raymond Chi <raychi@gmail.com>
 
 
+v7.50  (01/02/2020)
+- support 'w' and 'd' in offset unit specification. Useful for
+  specifying "-o1024w" for adding 1024 weeks for gps rollover bug.
+
 v7.43  (06/07/2019)
 - fix param handling of filenames with spaces in them.
 - added handling of xiaomi IMG_20180726_134426.jpg files.

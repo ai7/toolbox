@@ -30,15 +30,15 @@ my $argv0 = $0;              # executable name
 my $exifver = Image::ExifTool->VERSION();
 
 my $usage_ver =
-    "Q-Rename 7.4.3 [Perl/$^O $^V, ExifTool/v$exifver, 2019-06-07]\n" .
-    "(c) 2002-2019 by Raymond Chi, all rights reserved.\n";
+    "Q-Rename 7.5.0 [Perl/$^O $^V, ExifTool/v$exifver, 2020-01-02]\n" .
+    "(c) 2002-2020 by Raymond Chi, all rights reserved.\n";
 
 my $usage_help =
     "\nUsage: $argv0 <options> <files...>\n\n" .
     "<Options>\n\n" .
     "  -i[d]        Display/dump EXIF information in files\n" .
     "  -r           Rename files to YYYYMMDD_HHMMSS_NNNN[_tag].ext\n" .
-    "    -o<offset> time offset as [-]h:m:s                  [-r/-t]\n" .
+    "    -o<offset> time offset as [-]h:m:s | X<d|w>         [-r/-t]\n" .
     "    -e[+]<tag> append to or set tag (default: auto)     [-r]\n" .
     "    -f         use file timestamp instead of EXIF time  [-i/-r]\n" .
     "    -y         re-process based on exif/file time       [-r]\n" .

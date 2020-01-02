@@ -42,15 +42,24 @@ sub verify_offset
 {
     my ($offset) = @_;
     my $offset_sec = 0;
-    # start with an optional -, and followed by 1 to 4 digits
+    # start with an optional -, and followed by h:m:s
     if ($offset =~ /^([-]?)(\d{1,}):(\d{1,2}):(\d{1,2})$/) {
         my ($hour, $min, $sec) = ($2, $3, $4);
         $offset_sec = $hour * 3600 + $min * 60 + $sec;
         if ($1 eq "-") {
             $offset_sec *= -1;
         }
+    # start with an optional -, and followed by X[day/week]
+    # we don't do (y)ear or (m)onth because those don't have fixed duration.
+    } elsif ($offset =~ /^([-]?)(\d{1,})([dw])$/) {
+        my ($n, $unit) = ($2, $3);
+        if    ($unit eq "d") { $offset_sec = $n * 24 * 3600 }
+        elsif ($unit eq 'w') { $offset_sec = $n * 7 * 24 * 3600 }  # for gps rollover
+        if ($1 eq "-") {
+            $offset_sec *= -1;
+        }
     } else {
-        die "Error: offset for /o must be in [-]h:m:s format - `$offset\'\n";
+        die "Error: offset for -o must be in [-]h:m:s | X<d|w> format - `$offset\'\n";
     }
     return $offset_sec;
 }

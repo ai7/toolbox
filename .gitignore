@@ -13,3 +13,5 @@ build/
 
 # ignore SCons db
 .sconsign.dblite
+
+.idea
