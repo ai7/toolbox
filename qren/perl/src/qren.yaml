@@ -12,7 +12,12 @@
 filename:
 
     # pattern for renaming standard digital camera files
-    rename:  ^([a-zA-Z_]*)(\d+)([a-zA-Z]*)(\..*)$
+    # group1: img_
+    # group2: sequence number
+    # group3: optional words?
+    # group4: optional " (1)"
+    # group5: extension
+    rename:  ^([a-zA-Z_]*)(\d+)([a-zA-Z]*)( \([\d]+\))?(\..*)$
 
     # pattern from xiaomi phones: IMG_20180726_134426.jpg
     rename2: (\d{8}[_-]\d{6})(\..*)$
@@ -86,11 +91,14 @@ tag:
         Canon EOS DIGITAL REBEL XTi: rebel_xti
         Redmi Note 5: redmi_n5
         Pixel 2 XL: pixel2xl
+        Pixel 4 XL: pixel4xl
         # stupid iphone X names
         iPhone X: iphoneX
         iPhone XR: iphoneXr
         iPhone XS: iphoneXs
         iPhone XS Max: iphoneXsm
+        iPhone 11 Pro: iphone11p
+        iPhone 11 Pro Max: iphone11pm
         # iPhone 4: iphone4
         # iPhone 6 Plus: iphone6p
         # iPhone 6s Plus: iphone6sp
@@ -112,6 +120,9 @@ tag:
     # TODO: see if there's a better identifier that we can use that won't
     # confused same model from other people.
     owner:
-        iphoneXr: rc
-        iphoneXsm: hy
-        pixel2xl: sharon
+        # iphoneXr: ray
+        iphoneXsm: ray
+        iphone11pm: hy
+        pixel4xl: sharon
+        # iphone8p: eva
+        # iphoneX: evan

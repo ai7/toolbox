@@ -282,7 +282,7 @@ sub rename_file
 
         # If files are in original digital camera name format
         my $seq = sprintf("%.4d", $2);  # set seq length to 4
-        my $ext = $4;
+        my $ext = $5;
         my $tag = ($Args::parm_tag) ? $Args::parm_tag : "";
 
         # force sequence length to be the last 4 digits
