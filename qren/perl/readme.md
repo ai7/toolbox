@@ -32,24 +32,24 @@ unzip to wherever you want to run it from, no need to worry about an
 Installer that does who-knows-what to your system.
 
 - Download portable version of __Strawberry Perl__.
-  - http://strawberryperl.com/releases.html
-    - ie: http://strawberryperl.com/download/5.28.1.1/strawberry-perl-5.28.1.1-64bit-portable.zip
+  - https://strawberryperl.com/releases.html
+    - ie: https://strawberryperl.com/download/5.32.1.1/strawberry-perl-5.32.1.1-64bit-portable.zip
   - Unzip to suitable location
     - ie: `c:\devtools\perl.strawberry`
 - Download __ExifTool__.
-  - https://sno.phy.queensu.ca/~phil/exiftool/
-    - ie: https://sno.phy.queensu.ca/~phil/exiftool/Image-ExifTool-11.37.tar.gz
+  - https://exiftool.org/
+    - ie: https://exiftool.org/Image-ExifTool-12.24.tar.gz
   - Unzip to a _temporary location_.
   - Copy _content_ of `lib` to Strawberry Perl's `perl\site\lib` folder.
-    - From `Image-ExifTool-11.37\lib\*`
+    - From `Image-ExifTool-12.24\lib\*`
       - The `Image`, `File` folder
     - To: `perl.strawberry\perl\site\lib`
 
 Run `qren.pl` and it should not complain about any dependencies.
 
 ```
-Q-Rename 7.4.2 [Perl/MSWin32 v5.28.1, ExifTool/v11.37, 2019-04-19]
-(c) 2002-2019 by Raymond Chi, all rights reserved.
+Q-Rename 7.5.1 [Perl/MSWin32 v5.32.1, ExifTool/v12.24, 2021-04-17]
+(c) 2002-2021 by Raymond Chi, all rights reserved.
 
 Usage: qren.pl <options> <files...>
 
@@ -57,7 +57,7 @@ Usage: qren.pl <options> <files...>
 
   -i[d]        Display/dump EXIF information in files
   -r           Rename files to YYYYMMDD_HHMMSS_NNNN[_tag].ext
-    -o<offset> time offset as [-]h:m:s                  [-r/-t]
+    -o<offset> time offset as [-]h:m:s | X<d|w>         [-r/-t]
     -e[+]<tag> append to or set tag (default: auto)     [-r]
     -f         use file timestamp instead of EXIF time  [-i/-r]
     -y         re-process based on exif/file time       [-r]

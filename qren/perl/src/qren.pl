@@ -6,7 +6,7 @@
 # It is useful to convert files from digital camera to a more
 # meaningful name for archiving purposes
 
-# (c) 2002-2019 Raymond Chi <raymondc@cal.berkeley.edu>
+# (c) 2002-2021 Raymond Chi <raymondc@cal.berkeley.edu>
 
 package qren;
 
@@ -21,11 +21,12 @@ use Time::Local;
 use File::Spec;
 use File::Basename;
 
+# add this script folder to @INC search path
+use lib dirname(__FILE__);  # add script dir to @INC
+
 # additional modules
 use Image::ExifTool;  # http://search.cpan.org/~exiftool/
 
-# local qren modules
-use lib dirname(__FILE__);  # add script dir to @INC
 use Const;
 use Util;
 use Args;

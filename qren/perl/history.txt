@@ -2,6 +2,13 @@
                     Raymond Chi <raychi@gmail.com>
 
 
+v7.51  (04/17/2021)
+- Added makefile to build zip package for windows.
+- Able to load ExifTool from script folder.
+  - The zip from make will contain the exiftool dependencies, so user
+    no longer need to manually install it to their perl distribution.
+- tested with StrawBerry perl 5.32.1.1
+
 v7.50  (01/02/2020)
 - support 'w' and 'd' in offset unit specification. Useful for
   specifying "-o1024w" for adding 1024 weeks for gps rollover bug.
