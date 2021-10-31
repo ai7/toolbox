@@ -82,7 +82,7 @@ timestamp:
 tag:
 
     # hash of Model -> tags for auto tag generation. some are not needed
-    # due to intelligent auto processing.
+    # due to intelligent auto processing (Util.pm)
     lookup:
         SCH-I535: galaxys3
         Canon PowerShot SD1200 IS: sd1200
@@ -97,10 +97,10 @@ tag:
         iPhone XR: iphoneXr
         iPhone XS: iphoneXs
         iPhone XS Max: iphoneXsm
-        iPhone 11 Pro: iphone11p
-        iPhone 11 Pro Max: iphone11pm
-        iPhone 12 Pro: iphone12p
-        iPhone 12 Pro Max: iphone12pm
+        # iPhone 11 Pro: iphone11p
+        # iPhone 11 Pro Max: iphone11pm
+        # iPhone 12 Pro: iphone12p
+        # iPhone 12 Pro Max: iphone12pm
         # iPhone 4: iphone4
         # iPhone 6 Plus: iphone6p
         # iPhone 6s Plus: iphone6sp

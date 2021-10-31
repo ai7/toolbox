@@ -140,6 +140,7 @@ sub extract_make
 
 
 # change "iPhone xx Plus" -> "iphonexxp"
+# can test at: https://regex101.com/
 sub process_iphone_tag
 {
     my ($model) = @_;
@@ -148,8 +149,15 @@ sub process_iphone_tag
     # can't store this as constants or in config files). It will
     # require using eval to make it work which is dangerious.
 
-    # "iphone xx plus" -> "iphonexxp"
-    $model =~ s/^iPhone ([\ds]+)[ ]*(Plus)$/iphone$1p/i;
+    # "iphone xx plus|pro" -> "iphonexxp"
+    if ($model =~  /^iPhone ([\ds]+)[ ]*(Plus|Pro)$/) {
+        $model =~ s/^iPhone ([\ds]+)[ ]*(Plus|Pro)$/iphone$1p/i;
+    }
+
+    # "iphone xx pro max" -> "iphonexxpm"
+    elsif ($model =~ /^iPhone ([\ds]+)[ ]*(Pro Max)$/) {
+        $model =~   s/^iPhone ([\ds]+)[ ]*(Pro Max)$/iphone$1pm/i;
+    }
 
     return $model;
 }
