@@ -30,8 +30,8 @@ my $argv0 = $0;              # executable name
 my $exifver = Image::ExifTool->VERSION();
 
 my $usage_ver =
-    "Q-Rename 7.5.1 [Perl/$^O $^V, ExifTool/v$exifver, 2021-04-17]\n" .
-    "(c) 2002-2021 by Raymond Chi, all rights reserved.\n";
+    "Q-Rename 7.5.2 [Perl/$^O $^V, ExifTool/v$exifver, 2022-01-02]\n" .
+    "(c) 2002-2022 by Raymond Chi, all rights reserved.\n";
 
 my $usage_help =
     "\nUsage: $argv0 <options> <files...>\n\n" .

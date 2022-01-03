@@ -188,8 +188,11 @@ sub auto_generate_tag
         for my $remove_str (@Const::tag_trim) {
             $model =~ s/$remove_str//i;
         }
-        # remove whitespace from string
-        $model =~ s/\s+//;
+        # remove leading/trailing whitespaces first, this often happens
+        # due to branding strings removal
+        $model =~ s/^\s+|\s+$//g;
+        # replace all whitespace (middle ones) with _
+        $model =~ s/\s+/_/g;
         # lowercase all chars
         $tag = lc($model);
     }
@@ -257,6 +260,13 @@ sub extract_exiftime
     } else {
         # add owner info, if any
         $tag = add_owner($tag);
+        # for iphone mov, add _live tag if video is a live photo
+        # this is added after any owner info, so we have *_live.mov
+        if ($make == 5 && $ext =~ /mov$/i) {
+            if (is_live_photo($info)) {
+                $tag = "${tag}_live";
+            }
+        }
     }
 
     return ($datetime, $tag);
@@ -270,6 +280,29 @@ sub add_owner
         return "${tag}_${owner}";
     }
     return $tag;
+}
+
+sub is_live_photo
+{
+    my ($info) = @_;
+
+    # size is something like: 1920x1440
+    my $size = $info->{ImageSize};
+    return 0 if (!defined $size);
+
+    my ($x, $y) = $size =~ /^(\d+)x(\d+)$/;  # extract x and y dimension
+    my $ratio = $x / $y;
+
+    # if ratio is 4/3, then it is a live photo video.
+    # normal video should have aspect ratio 16/9
+    if (abs($ratio - 4/3) < 0.000001) {
+        return 1;
+    }
+
+    # in the future, we could potentially also check duration,
+    # and make sure it is no more than 4s or something.
+
+    return 0;
 }
 
 # figure out the max string length from the list of strings

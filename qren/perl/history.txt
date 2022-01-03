@@ -2,6 +2,10 @@
                     Raymond Chi <raychi@gmail.com>
 
 
+v7.52  (01/02/2022)
+- detect live photo .mov and append _live to tags.
+- improved tag processing, auto add _ between words.
+
 v7.51  (04/17/2021)
 - Added makefile to build zip package for windows.
 - Able to load ExifTool from script folder.
