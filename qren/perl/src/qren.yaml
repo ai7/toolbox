@@ -89,6 +89,8 @@ tag:
         COOLPIX L12: L12
         FinePix XP70 XP71 XP75: xp70
         Canon EOS DIGITAL REBEL XTi: rebel_xti
+        Canon EOS REBEL T1i: t1i
+        Canon EOS 5D Mark II: 5dm2
         Redmi Note 5: redmi_n5
         Pixel 2 XL: pixel2xl
         Pixel 4 XL: pixel4xl
@@ -124,8 +126,17 @@ tag:
     # confused same model from other people.
     owner:
         # iphoneXr: ray
-        iphoneXsm: ray
-        iphone11pm: hy
+        # iphoneXsm: ray
+        # iphone11pm: hy
+
+        # ----- since me/hy have same, uncomment one of them before rename
+        # iphone13pm: hy
+        # iphone13pm: ray
+
+        # -----
         pixel4xl: sharon
+        5dm2: zb
+        t1i: zb
+        # iphone12pm: tiffany
         # iphone8p: eva
         # iphoneX: evan
