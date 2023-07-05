@@ -159,6 +159,11 @@ sub process_iphone_tag
         $model =~   s/^iPhone ([\ds]+)[ ]*(Pro Max)$/iphone$1pm/i;
     }
 
+    # "iphone xx" -> "iphonexx"
+    elsif ($model =~ /^iPhone ([\ds]+)$/) {
+        $model =~   s/^iPhone ([\ds]+)$/iphone$1/i;
+    }
+
     return $model;
 }
 
