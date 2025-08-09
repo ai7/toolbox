@@ -23,7 +23,7 @@ from cmdarg import UpdateOption, UpdateOptionType, DeleteOption, DeleteOptionTyp
 from timefix import TimeFix, TimeZoneGps
 from geocache import persistent_cache
 from rate_limiter import rate_limit
-
+from gpx_map_viewer import display_gpx_coordinates_in_browser
 
 # lazily initialized
 _width_tracker: Optional[MyWidthTracker] = None
@@ -76,7 +76,7 @@ def fix_timestamp_desc(timestamp: str, wps_time: datetime):
     """fix the timestamp in the description field, if any"""
     # get the first part before newline or comma, in case the desc
     # field contains additional data.
-    timestamp = re.split('[\n,]', timestamp)[0]
+    timestamp = re.split('[\n]', timestamp)[0]
     t = TimeFix.read_timestamp(timestamp)
     if not t:
         return
@@ -402,11 +402,13 @@ def main():
               help='write waypoints to file (.gpx | .yaml)')
 @click.option('--garmin', is_flag=True, default=False,
               help='output garmin compatible gpx')
+@click.option('--map', 'show_map', is_flag=True, default=False,
+              help='display waypoints in OpenStreetMap')
 @click.option('--debug', is_flag=True, default=False,
               help='enable more debugging logs')
 def process_files(gpx_files, update: set[UpdateOption], delete: set[DeleteOption],
                   waypoint_src: Optional[str], sort_by: Optional[str], output_file,
-                  garmin: bool, debug: bool):
+                  garmin: bool, show_map: bool, debug: bool):
     """Process multiple input files."""
     # print local variables, aka input parameters, for debugging
     # print(locals())
@@ -419,7 +421,7 @@ def process_files(gpx_files, update: set[UpdateOption], delete: set[DeleteOption
     global _width_tracker, _my_params
     _width_tracker = MyWidthTracker()  # initialize width tracker
 
-    _params = MyParams(update, delete, waypoint_src, sort_by, output_file, garmin, debug)
+    _params = MyParams(update, delete, waypoint_src, sort_by, output_file, garmin, show_map, debug)
 
     # read the input file into a list of waypoints
     waypoints = read_input_file(gpx_files, _params)
@@ -434,6 +436,8 @@ def process_files(gpx_files, update: set[UpdateOption], delete: set[DeleteOption
 
     if _params.output_file:
         save_waypoints(waypoints, _params)
+    if _params.show_map:
+            html_file = display_gpx_coordinates_in_browser(waypoints)
 
 
 @main.command(name='q', help='query address for GPS coordinate')

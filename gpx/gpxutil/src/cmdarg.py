@@ -68,7 +68,7 @@ class MyParams:
 
     def __init__(self, update: set[UpdateOption], delete: set[DeleteOption],
                  waypoint_src: Optional[str], sort_by: Optional[str], output_file,
-                 garmin: bool, debug: bool):
+                 garmin: bool, show_map: bool, debug: bool):
         """convert from click input to runtime params for use"""
 
         self.waypoint_src = waypoint_src  # tag waypoint with specific src value
@@ -76,6 +76,7 @@ class MyParams:
         self.output_file = output_file    # write output file
         self.debug = debug                # enable more debug output
         self.garmin = garmin              # remove some custom fields
+        self.show_map = show_map          # show waypoints in open street map
 
         if update:
             self.time: bool = True if UpdateOption.TIME in update else False
