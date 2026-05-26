@@ -29,6 +29,20 @@ body {
     font-size: 14px;
 }
 
+.leaflet-popup-content pre {
+    white-space: pre-wrap;
+    word-wrap: break-word;
+}
+
+.copy-btn {
+    text-decoration: none;
+    color: #666;
+    display: inline-block;
+    width: 14px;
+    height: 14px;
+    vertical-align: middle;
+}
+
 /* Layer control styling */
 .leaflet-control-layers {
     background: rgba(255, 255, 255, 0.95);
@@ -48,4 +62,187 @@ body {
 
 .leaflet-control-layers input[type="radio"] {
     margin-right: 5px;
+}
+
+/* Waypoint label styles - new overlay approach */
+.waypoint-label-container {
+    background: none !important;
+    border: none !important;
+}
+
+.waypoint-label-overlay {
+    background-color: rgba(255, 255, 255, 0.9);
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    padding: 2px 6px;
+    font-size: 11px;
+    font-weight: bold;
+    color: #333;
+    white-space: nowrap;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+    text-align: center;
+    min-width: 40px;
+    text-shadow: 1px 1px 1px rgba(255,255,255,0.8);
+    position: relative;
+    z-index: 1000;
+}
+
+/* Hover effect for label overlays */
+.waypoint-label-overlay:hover {
+    background-color: rgba(255, 255, 255, 1);
+    border-color: #007cba;
+    color: #007cba;
+    transform: scale(1.05);
+    transition: all 0.2s ease;
+}
+
+/* Waypoint list panel */
+.waypoint-panel {
+    position: fixed;
+    top: 0;
+    right: -350px;
+    width: 350px;
+    height: 100%;
+    background: white;
+    box-shadow: -2px 0 8px rgba(0, 0, 0, 0.2);
+    z-index: 2000;
+    transition: none;
+    overflow-y: auto;
+}
+
+.waypoint-panel.open {
+    right: 0;
+}
+
+.waypoint-panel-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 16px;
+    background: #2c3e50;
+    color: white;
+    position: sticky;
+    top: 0;
+}
+
+.waypoint-panel-header h3 {
+    margin: 0;
+    font-size: 15px;
+}
+
+.waypoint-panel-close {
+    background: none;
+    border: none;
+    color: white;
+    font-size: 20px;
+    cursor: pointer;
+}
+
+.waypoint-panel-search {
+    padding: 10px 16px;
+    border-bottom: 1px solid #eee;
+    position: sticky;
+    top: 43px;
+    background: white;
+}
+
+.waypoint-panel-search input {
+    width: 100%;
+    padding: 8px 10px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 13px;
+    box-sizing: border-box;
+}
+
+.waypoint-panel-search input:focus {
+    outline: none;
+    border-color: #3498db;
+}
+
+.waypoint-sort-btn {
+    margin-top: 8px;
+    padding: 5px 10px;
+    background: #f0f0f0;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 12px;
+    cursor: pointer;
+    width: 100%;
+}
+
+.waypoint-sort-btn:hover {
+    background: #e0e0e0;
+}
+
+.waypoint-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.waypoint-list li {
+    padding: 10px 16px;
+    border-bottom: 1px solid #eee;
+    cursor: pointer;
+}
+
+.waypoint-list li:hover {
+    background: #f0f7ff;
+}
+
+.waypoint-list li.selected {
+    background: #d4e9ff;
+    border-left: 3px solid #3498db;
+}
+
+.waypoint-list-name {
+    font-weight: bold;
+    font-size: 13px;
+    color: #2c3e50;
+}
+
+.waypoint-list-location {
+    font-size: 11px;
+    color: #777;
+    margin-top: 2px;
+}
+
+.waypoint-list-time {
+    font-size: 11px;
+    color: #777;
+    margin-top: 2px;
+}
+
+/* List toggle button */
+.leaflet-control-list-btn {
+    width: 34px;
+    height: 34px;
+    background: white;
+    border: 2px solid rgba(0, 0, 0, 0.2);
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 18px;
+    line-height: 34px;
+    text-align: center;
+}
+
+.leaflet-control-list-btn:hover {
+    background: #f4f4f4;
+}
+
+/* Pulsing ring animation for selected waypoint */
+.marker-pulse {
+    position: absolute;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: rgba(231, 76, 60, 0.4);
+    animation: pulse-ring 1.5s ease-out infinite;
+    pointer-events: none;
+}
+
+@keyframes pulse-ring {
+    0% { transform: scale(1); opacity: 1; }
+    100% { transform: scale(3); opacity: 0; }
 }

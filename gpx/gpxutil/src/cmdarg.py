@@ -5,6 +5,7 @@ Command-line argument related stuff
 import click
 import enum
 from typing import List, Optional, Tuple, IO, Any
+from wpfilter import parse_date_range
 
 
 class DeleteOption(str, enum.Enum):
@@ -16,13 +17,16 @@ class DeleteOption(str, enum.Enum):
 
 class UpdateOption(str, enum.Enum):
     """various field transformations we support"""
-    TIME = 'time'
-    TIME_ZONE = 'tz'
+    DESCTIME = 'desctime'
+    FIXSEC = 'fixsec'
+    LOCALTIME = 'localtime'
+    TZ = 'tz'
     ADDRESS = 'addr'
+    DESC2TIME = 'desc2time'
 
 
 class DeleteOptionType(click.ParamType):
-    name = 'delete_option'
+    name = 'fields'
 
     def convert(self, value, param, ctx):
         if value is None:
@@ -39,7 +43,7 @@ class DeleteOptionType(click.ParamType):
 
 
 class UpdateOptionType(click.ParamType):
-    name = 'update_option'
+    name = 'action'
 
     def convert(self, value, param, ctx):
         if value is None:
@@ -55,12 +59,72 @@ class UpdateOptionType(click.ParamType):
             )
 
 
+VALID_COLUMNS = ['name', 'coord', 'ele', 'time', 'lvl4', 'tz', 'loc', 'addr', 'desc', 'src']
+
+
+class ColumnsType(click.ParamType):
+    name = 'columns'
+
+    def convert(self, value, param, ctx):
+        if value is None:
+            return None
+        cols = [c.strip() for c in value.split(',')]
+        invalid = [c for c in cols if c not in VALID_COLUMNS]
+        if invalid:
+            self.fail(
+                f'invalid column(s): {", ".join(invalid)}.\n'
+                f'Choose from: {", ".join(VALID_COLUMNS)}',
+                param, ctx,
+            )
+        return cols
+
+
+class IndexRangeType(click.ParamType):
+    """Parse index ranges like 5, 5..10, 5.., ..10, or comma-separated 5,10,20..25 (1-based)."""
+    name = 'index_range'
+
+    def _parse_one(self, s):
+        s = s.strip()
+        if '..' in s:
+            left, right = s.split('..', 1)
+            return (int(left) if left else None, int(right) if right else None)
+        else:
+            n = int(s)
+            return (n, n)
+
+    def convert(self, value, param, ctx):
+        if value is None:
+            return None
+        try:
+            return [self._parse_one(part) for part in value.split(',')]
+        except ValueError:
+            self.fail(
+                f'"{value}" is not a valid index range. Use N, N..M, N.., ..M, or comma-separated',
+                param, ctx,
+            )
+
+
+class DateRangeType(click.ParamType):
+    name = 'date_range'
+
+    def convert(self, value, param, ctx):
+        if value is None:
+            return None
+        try:
+            return parse_date_range(value)
+        except ValueError as e:
+            self.fail(str(e), param, ctx)
+
+
 class MyParams:
     """Holds parameters for program operation"""
 
-    time: bool = False      # fix time values
-    timezone: bool = False  # fetch tz info
-    address: bool = False   # fetch address
+    desctime: bool = False   # normalize timestamp in desc field
+    fixsec: bool = False     # copy seconds from wps.time to desc (use with fixdesc)
+    localtime: bool = False  # convert wps.time from UTC to local
+    tz: bool = False         # recompute timezone from GPS coords
+    address: bool = False    # fetch address
+    desc2time: bool = False  # backfill time from desc (Garmin 60csx)
 
     no_sym: bool = False  # remove sym field under waypoint
     no_type: bool = False  # strip type field under waypoint
@@ -79,9 +143,12 @@ class MyParams:
         self.show_map = show_map          # show waypoints in open street map
 
         if update:
-            self.time: bool = True if UpdateOption.TIME in update else False
-            self.timezone: bool = True if UpdateOption.TIME_ZONE in update else False
+            self.desctime: bool = True if UpdateOption.DESCTIME in update else False
+            self.fixsec: bool = True if UpdateOption.FIXSEC in update else False
+            self.localtime: bool = True if UpdateOption.LOCALTIME in update else False
+            self.tz: bool = True if UpdateOption.TZ in update else False
             self.address: bool = True if UpdateOption.ADDRESS in update else False
+            self.desc2time: bool = True if UpdateOption.DESC2TIME in update else False
         if delete:
             self.no_extension: bool = True if DeleteOption.EXTENSION in delete else False
             self.no_sym: bool = True if DeleteOption.SYM in delete else False

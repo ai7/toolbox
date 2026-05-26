@@ -15,6 +15,7 @@ Timestamp related stuff
 from typing import List, Optional, Tuple, IO, Any
 
 import pytz
+import re
 
 from datetime import datetime
 from timezonefinder import TimezoneFinder
@@ -32,7 +33,8 @@ class TimeFix:
         "%b %d, %Y %H:%M",     # Jul 20, 2018  18:14
         "%Y-%m-%d %I:%M %p",   # 2018-07-20 6:14 pm
         '%d-%b-%y %H:%M:%S',   # 06-AUG-18 7:57:56, 60csx
-        REF_DESCRIPTION        # 2025-03-06 14:26:54
+        REF_DESCRIPTION,        # 2025-03-06 14:26:54
+        '%Y-%m-%d %H:%M',      # 2006-07-26 13:42
     ]
 
     @staticmethod
@@ -54,6 +56,42 @@ class TimeFix:
         """convert timestamp to the specified timezone"""
         target_timezone = pytz.timezone(timezone)
         return timestamp.astimezone(target_timezone)
+
+    @staticmethod
+    def localize_naive(naive_dt: datetime, timezone: str) -> Optional[datetime]:
+        """
+        Attach timezone to a naive datetime.
+        Use when the timestamp was recorded in local time without timezone info
+        (e.g. older GPS units storing time in the description field).
+        timezone is an IANA name (e.g. "America/Vancouver", "Asia/Tokyo").
+        """
+        tz = pytz.timezone(timezone)
+        return tz.localize(naive_dt)
+
+    @staticmethod
+    def parse_normalized_timestamp(desc: str) -> Optional[datetime]:
+        """
+        Parse a normalized timestamp (YYYY-MM-DD based) from desc field.
+        Handles varying levels of precision:
+          "2019-06-17 15:51:14"  -> full datetime
+          "2006-07-08"           -> date only, defaults to midnight
+          "2006-05 ?"            -> month only, defaults to 1st at midnight
+        Ignores data after comma or newline.
+        Returns a naive datetime, ready to be localized with localize_naive().
+        """
+        # split on comma or newline to isolate the timestamp portion
+        s = re.split(r'[,\n]', desc.strip())[0].strip()
+        # full datetime
+        if re.match(r'^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$', s):
+            return datetime.strptime(s, '%Y-%m-%d %H:%M:%S')
+        # date only
+        if re.match(r'^\d{4}-\d{2}-\d{2}$', s):
+            return datetime.strptime(s, '%Y-%m-%d')
+        # year-month only (may have trailing junk like "?")
+        m = re.match(r'^(\d{4}-\d{2})', s)
+        if m:
+            return datetime.strptime(m.group(1), '%Y-%m')
+        return None
 
 
 class TimeZoneGps:

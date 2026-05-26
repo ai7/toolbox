@@ -18,6 +18,13 @@ import click
 
 # Global registry to track all cache instances that need to be saved on exit
 _cache_registry = []
+_refresh_max_age = None  # None = use cache normally, timedelta = refresh if older
+
+
+def set_refresh_mode(max_age):
+    """Set refresh mode. max_age is a timedelta — entries older than this are re-fetched."""
+    global _refresh_max_age
+    _refresh_max_age = max_age
 
 
 def persistent_cache(cache_file: str = "geocoding_cache.json"):
@@ -38,10 +45,11 @@ def persistent_cache(cache_file: str = "geocoding_cache.json"):
     """
     def decorator(func: Callable) -> Callable:
         cache = {}
-        # Create cache file in the same directory as geocache.py
+        # Store cache in ~/.cache/gpxutil/
         if not os.path.isabs(cache_file):
-            script_dir = os.path.dirname(os.path.abspath(__file__))
-            cache_path = os.path.join(script_dir, cache_file)
+            cache_dir = os.path.join(os.path.expanduser('~'), '.cache', 'gpxutil')
+            os.makedirs(cache_dir, exist_ok=True)
+            cache_path = os.path.join(cache_dir, cache_file)
         else:
             cache_path = cache_file
         cache_updated = False  # Track if cache has been modified
@@ -130,29 +138,46 @@ def persistent_cache(cache_file: str = "geocoding_cache.json"):
                 # Handle string or other simple types
                 return data.get("data")
 
-        # Load cache when decorator is applied
-        _load_cache()
+        cache_loaded = False  # Track if cache has been loaded
+
+        def _ensure_loaded():
+            nonlocal cache_loaded
+            if not cache_loaded:
+                _load_cache()
+                cache_loaded = True
 
         # Register this cache instance for saving on exit
         cache_instance = {
             'save_func': _save_cache,
             'cache_path': cache_path,
             'cache_ref': lambda: cache,
-            'updated_ref': lambda: cache_updated
+            'updated_ref': lambda: cache_updated,
+            'loaded_ref': lambda: cache_loaded
         }
         _cache_registry.append(cache_instance)
 
         @functools.wraps(func)
         def wrapper(*args, **kwargs):
             nonlocal cache_updated
+            _ensure_loaded()
 
             # Generate cache key
             cache_key = _make_cache_key(*args, **kwargs)
 
-            # Check cache first
+            # Check cache first (skip if entry is stale per refresh mode)
             if cache_key in cache:
-                click.echo(f"  [CACHE HIT] Using cached result for {cache_key}")
-                return _deserialize_location(cache[cache_key])
+                if _refresh_max_age is not None:
+                    cached_at = cache[cache_key].get('cached_at')
+                    if cached_at:
+                        age = datetime.now() - datetime.fromisoformat(cached_at)
+                        if age > _refresh_max_age:
+                            click.echo(f"  [CACHE STALE] Refreshing {cache_key} (age: {age.days}d)")
+                        else:
+                            click.echo(f"  [CACHE HIT] Using cached result for {cache_key}")
+                            return _deserialize_location(cache[cache_key])
+                else:
+                    click.echo(f"  [CACHE HIT] Using cached result for {cache_key}")
+                    return _deserialize_location(cache[cache_key])
 
             # Call original function
             click.echo(f"  [CACHE MISS] Calling function for {cache_key}")
@@ -200,10 +225,9 @@ def persistent_cache(cache_file: str = "geocoding_cache.json"):
 
 def _save_all_caches():
     """Save all registered caches to disk. Called on program exit."""
-    click.echo("  [CACHE] Saving all updated caches to disk...")
     saved_count = 0
     for cache_instance in _cache_registry:
-        if cache_instance['updated_ref']():  # Only save if updated
+        if cache_instance['loaded_ref']() and cache_instance['updated_ref']():
             cache_instance['save_func']()
             saved_count += 1
     if saved_count > 0:
