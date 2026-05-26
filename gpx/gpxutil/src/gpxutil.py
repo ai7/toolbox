@@ -5,7 +5,7 @@
 # i: info
 # q: query for address based on gpx data
 
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from dateutil.relativedelta import relativedelta
 from typing import List, Optional, Tuple, IO, Any
 
@@ -157,7 +157,7 @@ def update_timestamp_to_localized(wps: MyWaypoint) -> None:
         click.echo(click.style(f'  [{wps.name}] error: no timezone info (run -u addr first)', fg='red'))
         return
     localized_dt = TimeFix.localize_timestamp(wps.time, tz_zone)
-    if localized_dt != wps.time:
+    if localized_dt.utcoffset() != wps.time.utcoffset():
         click.echo(f'  "{wps.time}" -> "{localized_dt}"')
         wps.time = localized_dt
 
@@ -255,7 +255,7 @@ def print_waypoints(waypoints: List[MyWaypoint], columns: List[str]):
             elif col == 'addr':
                 parts.append(pad_to_width(_get_addr_field(wp, 'Address'), widths['addr']))
             elif col == 'desc':
-                parts.append(wp.description or '')
+                parts.append((wp.description or '').replace('\n', '↵'))
             elif col == 'src':
                 parts.append(f'{wp.source or "":<{widths["src"]}}')
 
@@ -443,12 +443,12 @@ def process_waypoints(waypoints: List[MyWaypoint], params: MyParams):
         if params.address:
             location = get_address_from_coordinates(wps.latitude, wps.longitude)
             if location:
-                timezone = TimeZoneGps.get_timezone(wps.latitude, wps.longitude)
-                address: MyAddress = MyAddress(location=location, timezone=timezone)
+                tz_name = TimeZoneGps.get_timezone(wps.latitude, wps.longitude)
+                address: MyAddress = MyAddress(location=location, timezone=tz_name)
                 save_address_to_my_waypoint(wps, address)
                 click.echo(f'    {click.style(address.Address, fg="bright_white")}')
                 click.echo(f'    {address}')
-                click.echo(f'    TZ: {timezone}')
+                click.echo(f'    TZ: {tz_name}')
             else:
                 click.echo(f'    {click.style("failed to get address, exiting ...", fg="bright_red")}')
                 exit(1)
@@ -485,7 +485,7 @@ def process_waypoints(waypoints: List[MyWaypoint], params: MyParams):
         if params.sort_by == 'name':
             waypoints.sort(key=lambda w: w.name)
         elif params.sort_by == 'time':
-            waypoints.sort(key=lambda w: (w.time, w.name))
+            waypoints.sort(key=lambda w: (w.time or datetime.now(timezone.utc), w.name))
         elif params.sort_by == 'desc':
             waypoints.sort(key=lambda w: w.description if w.description else '')
         elif params.sort_by == 'cmt':
@@ -565,7 +565,7 @@ Examples:
                  help='reverse geocode a coordinate')
 @optgroup.option('--debug', is_flag=True, default=False,
                  help='enable verbose logging')
-@click.version_option('2.0.0', '-V', '--version')
+@click.version_option('2.0.1', '-V', '--version')
 def main(gpx_files,
          columns, show_map: bool,
          name_filter, date_range, location, index_range, missing,
@@ -573,7 +573,7 @@ def main(gpx_files,
          garmin: bool, refresh,
          sort_by: Optional[str], output_file,
          query, debug: bool):
-    """GPX waypoint utility v2.0.0 — read, transform, and export waypoints."""
+    """GPX waypoint utility v2.0.1 — read, transform, and export waypoints."""
 
     if query:
         latitude, longitude = query
