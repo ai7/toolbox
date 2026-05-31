@@ -5,6 +5,9 @@
 
 // Configuration constants
 var LABEL_ZOOM_THRESHOLD = 13; // Show labels when zoom >= this level
+var MARKER_COLOR_PREFERENCE = ['red', 'green', 'violet', 'orange', 'yellow', 'grey', 'blue'];
+var MARKER_ICON_URL = 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-';
+var MARKER_SHADOW_URL = 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png';
 
 // Mutable application state
 var mapState = {
@@ -76,6 +79,9 @@ function initializeMap(coordinates, centerLat, centerLon, zoomLevel) {
         });
     });
 
+    // Assign colors to sources
+    assignSourceColors(coordinates);
+
     // Create initial markers based on current zoom level
     var initialZoom = map.getZoom();
     createMarkersForZoom(initialZoom);
@@ -93,17 +99,52 @@ function initializeMap(coordinates, centerLat, centerLon, zoomLevel) {
     console.log('Label threshold: zoom >= ' + LABEL_ZOOM_THRESHOLD);
 }
 
+// Source-based marker coloring
+var srcColorMap = {};
+var iconCache = {};
+
+function assignSourceColors(data) {
+    var sources = [];
+    data.forEach(function(coord) {
+        if (coord.src && sources.indexOf(coord.src) === -1) {
+            sources.push(coord.src);
+        }
+    });
+    sources.forEach(function(src, i) {
+        srcColorMap[src] = MARKER_COLOR_PREFERENCE[i % MARKER_COLOR_PREFERENCE.length];
+    });
+}
+
+function getColoredIcon(color) {
+    if (!iconCache[color]) {
+        iconCache[color] = new L.Icon({
+            iconUrl: MARKER_ICON_URL + color + '.png',
+            shadowUrl: MARKER_SHADOW_URL,
+            iconSize: [25, 41],
+            iconAnchor: [12, 41],
+            popupAnchor: [1, -34],
+            shadowSize: [41, 41],
+            tooltipAnchor: [1, -28]
+        });
+    }
+    return iconCache[color];
+}
+
+function getMarkerIcon(coord) {
+    var color = srcColorMap[coord.src] || 'blue';
+    return getColoredIcon(color);
+}
+
 // Marker creation functions
 function createSimpleMarker(coord) {
-    var marker = L.marker([coord.lat, coord.lon])
+    var marker = L.marker([coord.lat, coord.lon], {icon: getMarkerIcon(coord)})
         .bindTooltip(coord.name)
         .bindPopup(coord.popup, {maxWidth: 500});
     return marker;
 }
 
 function createLabeledMarker(coord) {
-    // Create the standard marker first (this ensures perfect positioning)
-    var marker = L.marker([coord.lat, coord.lon])
+    var marker = L.marker([coord.lat, coord.lon], {icon: getMarkerIcon(coord)})
         .bindPopup(coord.popup, {maxWidth: 500});
 
     // Add a custom label above the marker using a separate div

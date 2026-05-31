@@ -13,7 +13,7 @@ from datetime import datetime
 
 # Import from existing modules if available
 try:
-    from wpmodel import MyWaypoint
+    from .wpmodel import MyWaypoint
     from gpxutil import read_gpx_file, read_yaml_file, MyParams
     import gpxpy
     from gpxpy.gpx import GPXWaypoint, GPX
@@ -69,9 +69,10 @@ def get_template_path() -> str:
     Returns:
         Path to the HTML template file
     """
-    template_path = os.path.join(os.path.dirname(__file__), 'map', 'map_template.html')
+    project_root = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
+    template_path = os.path.join(project_root, 'web', 'waypoint', 'template.html')
     if not os.path.exists(template_path):
-        raise FileNotFoundError("HTML template file not found: map/map_template.html")
+        raise FileNotFoundError("HTML template file not found: web/waypoint/template.html")
     return template_path
 
 
@@ -182,6 +183,7 @@ def build_js_coordinates(coordinates: List[MapCoordinate]):
             'name': marker_name,
             'time': time_str,
             'date': coord.time.strftime('%Y-%m-%d') if coord.time else '',
+            'src': coord.source or '',
             'lvl4': coord.lvl4 or '',
             'country_code': coord.country_code or '',
             'city': coord.city or '',
@@ -217,10 +219,10 @@ def create_html_with_coordinates(coordinates: Union[List[MapCoordinate], List['M
     html_content = html_content.replace('{{CENTER_LON}}', f'{avg_lon:.6f}')
     html_content = html_content.replace('{{ZOOM}}', str(zoom))
 
-    map_dir = os.path.join(os.path.dirname(__file__), 'map')
-    html_content = html_content.replace('href="map_styles.css"', f'href="file://{os.path.join(map_dir, "map_styles.css")}"')
-    html_content = html_content.replace('src="map_filter.js"', f'src="file://{os.path.join(map_dir, "map_filter.js")}"')
-    html_content = html_content.replace('src="map_script.js"', f'src="file://{os.path.join(map_dir, "map_script.js")}"')
+    web_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.realpath(__file__))), 'web', 'waypoint')
+    html_content = html_content.replace('href="styles.css"', f'href="file://{os.path.join(web_dir, "styles.css")}"')
+    html_content = html_content.replace('src="filter.js"', f'src="file://{os.path.join(web_dir, "filter.js")}"')
+    html_content = html_content.replace('src="script.js"', f'src="file://{os.path.join(web_dir, "script.js")}"')
 
     temp_dir = tempfile.gettempdir()
     html_file_path = os.path.join(temp_dir, 'gpx_map_viewer.html')

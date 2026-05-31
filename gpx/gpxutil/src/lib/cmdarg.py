@@ -5,7 +5,7 @@ Command-line argument related stuff
 import click
 import enum
 from typing import List, Optional, Tuple, IO, Any
-from wpfilter import parse_date_range
+from .wpfilter import parse_date_range
 
 
 class DeleteOption(str, enum.Enum):

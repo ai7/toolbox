@@ -1,0 +1,43 @@
+# Shared settings for gpxutil and fitutil
+
+fitutil:
+  # Garmin product ID -> display name and short name for filenames
+  garmin_products:
+    3028:
+      name: GPSMAP 66s
+      short: 66s
+    3694:
+      name: GPSMAP 66sr
+      short: 66sr
+    4201:
+      name: eTrex SE
+      short: etrexse
+    4202:
+      name: eTrex Solar
+      short: solar
+
+  # GPX creator string -> device short name
+  creator_device_map:
+    motionx: motionx
+    garmin: garmin
+    organic maps: organicmaps
+
+  # Canonical activity name -> aliases (keywords that differ from the canonical name)
+  activity_keywords:
+    hiking: [hike]
+    cycling: [bike, biking]
+    walking: [walk]
+    driving: [drive]
+    running: [run]
+
+  # Minutes of GPS time gap before splitting into a new segment
+  gap_threshold_minutes: 30
+
+  # Filenames matching these patterns are considered generic (not preserved in rename)
+  generic_name_patterns:
+    - "^track[_\\s]?\\d+$"
+    - "^\\d{4}-\\d{2}-\\d{2}[ _-]\\d{2}[.\\-]\\d{2}([.\\-]\\d{2})?$"
+    - "^\\d{8}_\\d{4}-"
+
+gpxutil:
+  # future gpxutil settings here

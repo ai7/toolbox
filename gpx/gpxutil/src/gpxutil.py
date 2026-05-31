@@ -5,6 +5,8 @@
 # i: info
 # q: query for address based on gpx data
 
+import shutil
+import textwrap
 from datetime import datetime, timedelta, timezone
 from dateutil.relativedelta import relativedelta
 from typing import List, Optional, Tuple, IO, Any
@@ -16,22 +18,19 @@ import yaml
 import gpxpy
 import re
 from gpxpy.gpx import GPXWaypoint, GPX
-from geopy.geocoders import Nominatim
 import traceback
 
 # my stuff
-from wpmodel import MyWaypoint, WaypointExtension, MyAddress, MyWidthTracker
-from cmdarg import UpdateOption, UpdateOptionType, DeleteOption, DeleteOptionType, DateRangeType, IndexRangeType, ColumnsType, MyParams
-from wpfilter import filter_by_date, filter_by_location, filter_by_index, parse_relative
-from timefix import TimeFix, TimeZoneGps
-from geocache import persistent_cache, set_refresh_mode
-from rate_limiter import rate_limit
+from lib.wpmodel import MyWaypoint, WaypointExtension, MyAddress, MyWidthTracker
+from lib.cmdarg import UpdateOption, UpdateOptionType, DeleteOption, DeleteOptionType, DateRangeType, IndexRangeType, ColumnsType, MyParams
+from lib.wpfilter import filter_by_date, filter_by_location, filter_by_index, parse_relative
+from lib.timefix import TimeFix, TimeZoneGps
+from lib.geocache import set_refresh_mode
 
 # lazily initialized
 _width_tracker: Optional[MyWidthTracker] = None
 
-# Create a geolocator object with a custom user agent for fetching address
-_geolocator = Nominatim(user_agent="gpxutil")
+from lib.geocode import get_address_from_coordinates
 
 
 # Custom YAML representer for GPXWaypoint
@@ -162,19 +161,6 @@ def update_timestamp_to_localized(wps: MyWaypoint) -> None:
         wps.time = localized_dt
 
 
-@rate_limit(max_calls=1, time_window=3.0, verbose=True)
-def _reverse_geocode(latitude: float, longitude: float) -> Optional[geopy.Location]:
-    """Rate-limited wrapper for geolocator reverse geocoding."""
-    return _geolocator.reverse((latitude, longitude), language='en')
-
-
-@persistent_cache(cache_file="geocoding_cache.json")
-def get_address_from_coordinates(latitude: float, longitude: float) -> Optional[geopy.Location]:
-    try:
-        return _reverse_geocode(latitude=latitude, longitude=longitude)
-    except Exception as e:
-        click.echo(f"failed to do reverse geo-lookup: {e}", err=True)
-        # traceback.print_exc()  # This prints the full stacktrace
 
 
 def display_width(s: str) -> int:
@@ -578,9 +564,33 @@ def main(gpx_files,
     if query:
         latitude, longitude = query
         location = get_address_from_coordinates(latitude, longitude)
-        address: MyAddress = MyAddress(location=location)
-        click.echo(f"    {address.Address}")
-        click.echo(f"    {address}")
+        tz_name = TimeZoneGps.get_timezone(latitude, longitude)
+        address: MyAddress = MyAddress(location=location, timezone=tz_name)
+        label_w = 15  # "  Postal code: " is 15 chars
+        indent = ' ' * label_w
+        def _field(label, value):
+            line = f"  {label:<13}{value}"
+            return '\n'.join(textwrap.wrap(line, width=shutil.get_terminal_size().columns,
+                                           subsequent_indent=indent))
+        full_addr = address.Address or ''
+        city = getattr(address, 'City', None)
+        city_pos = full_addr.find(city) if city else -1
+        cols = shutil.get_terminal_size().columns
+        if city_pos > 0:
+            addr_local = full_addr[:city_pos].rstrip(', ')
+            addr_civic = full_addr[city_pos:]
+            part1 = '\n'.join(textwrap.wrap(f"  {'Address:':<13}{addr_local}", width=cols, subsequent_indent=indent))
+            part2 = '\n'.join(textwrap.wrap(addr_civic, width=cols - len(indent), subsequent_indent=indent))
+            click.echo(part1 + '\n' + indent + part2)
+        else:
+            click.echo(_field("Address:", full_addr))
+        click.echo(_field("Street:", getattr(address, 'StreetAddress', None)))
+        click.echo(_field("City:", getattr(address, 'City', None)))
+        click.echo(_field("State:", getattr(address, 'State', None)))
+        click.echo(_field("Postal code:", getattr(address, 'PostalCode', None)))
+        click.echo(_field("Country:", f"{getattr(address, 'Country', None)} ({getattr(address, 'CountryCode', None)})"))
+        click.echo(_field("LvL4:", getattr(address, 'LvL4', None)))
+        click.echo(_field("Timezone:", tz_name))
         return
 
     if not gpx_files:
@@ -672,7 +682,7 @@ def main(gpx_files,
     if _params.output_file:
         save_waypoints(waypoints, _params)
     if _params.show_map:
-        from gpx_map_viewer import display_gpx_coordinates_in_browser
+        from lib.waypoint_map import display_gpx_coordinates_in_browser
         html_file = display_gpx_coordinates_in_browser(waypoints)
 
 

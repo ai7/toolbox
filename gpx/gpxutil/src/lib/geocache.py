@@ -19,6 +19,13 @@ import click
 # Global registry to track all cache instances that need to be saved on exit
 _cache_registry = []
 _refresh_max_age = None  # None = use cache normally, timedelta = refresh if older
+_verbose = True  # Show cache hit/miss messages
+
+
+def set_verbose(verbose):
+    """Control whether cache hit/miss messages are printed."""
+    global _verbose
+    _verbose = verbose
 
 
 def set_refresh_mode(max_age):
@@ -94,7 +101,7 @@ def persistent_cache(cache_file: str = "geocoding_cache.json"):
             """Generate cache key from function arguments"""
             # For get_address_from_coordinates(latitude, longitude)
             if len(args) >= 2:
-                return f"{args[0]},{args[1]}"
+                return f"{round(float(args[0]), 4)},{round(float(args[1]), 4)}"
             # Generic fallback for other functions
             return str(args) + str(sorted(kwargs.items()))
 
@@ -173,10 +180,12 @@ def persistent_cache(cache_file: str = "geocoding_cache.json"):
                         if age > _refresh_max_age:
                             click.echo(f"  [CACHE STALE] Refreshing {cache_key} (age: {age.days}d)")
                         else:
-                            click.echo(f"  [CACHE HIT] Using cached result for {cache_key}")
+                            if _verbose:
+                                click.echo(f"  [CACHE HIT] Using cached result for {cache_key}")
                             return _deserialize_location(cache[cache_key])
                 else:
-                    click.echo(f"  [CACHE HIT] Using cached result for {cache_key}")
+                    if _verbose:
+                        click.echo(f"  [CACHE HIT] Using cached result for {cache_key}")
                     return _deserialize_location(cache[cache_key])
 
             # Call original function
