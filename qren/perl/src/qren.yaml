@@ -94,11 +94,22 @@ tag:
         Redmi Note 5: redmi_n5
         Pixel 2 XL: pixel2xl
         Pixel 4 XL: pixel4xl
+        ILCE-7RM3: 7rm3
+
+        # Olympus OM-D E-M5
+        E-M5: em5
+        E-M5MarkIII: em5m3
+        E-M1X: em1x
+        E-M1MarkII: em1m2
+        E-M1MarkIII: em1m3
+        OM-1: om1
+
         # stupid iphone X names
         iPhone X: iphoneX
         iPhone XR: iphoneXr
         iPhone XS: iphoneXs
         iPhone XS Max: iphoneXsm
+
         # iPhone 11 Pro: iphone11p
         # iPhone 11 Pro Max: iphone11pm
         # iPhone 12 Pro: iphone12p
@@ -125,13 +136,13 @@ tag:
     # TODO: see if there's a better identifier that we can use that won't
     # confused same model from other people.
     owner:
-        # iphoneXr: ray
         # iphoneXsm: ray
         # iphone11pm: hy
 
         # ----- since me/hy have same, uncomment one of them before rename
-        # iphone13pm: hy
-        # iphone13pm: ray
+        iphoneXr: kate
+        iphone17pm: hy
+        iphone13pm: ray
 
         # -----
         pixel4xl: sharon

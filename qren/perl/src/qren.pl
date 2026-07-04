@@ -578,6 +578,8 @@ sub get_orientation
             $rotation = $1;
         } elsif ($rotation =~ /Rotate (\d+)/i) {
             $rotation = $1;
+        } elsif ($rotation =~ /Unknown \(0\)/i) {  # pixel 6 screenshot
+            $rotation = 0;
         }
     }
 
