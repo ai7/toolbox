@@ -301,12 +301,18 @@ sub rename_file
 
 
     # xiaomi images: IMG_20180726_134426.jpg
+    # android: PXL_20260224_040007629[_stuff].jpg
     } elsif ($filename =~ /$Const::pat_rename2/) {
 
         # use timestamp from filename
         my $filename_time = Util::convert_timestamp_file($1);
-        my $seq = sprintf("%.4d", $local_seq++);  # generate seq number
-        my $ext = $2;
+
+        # my $seq = sprintf("%.4d", $local_seq++);  # generate seq number
+        # Generate the sequence number: use milliseconds if present, 
+        #   otherwise fallback to auto-increment
+        my $seq = ($2 ne '') ? sprintf("%.4s", $2) : sprintf("%.4d", $local_seq++);
+
+        my $ext = $3;
         my $tag = ($Args::parm_tag) ? $Args::parm_tag : "";
 
         ($newname, $newtime) = generate_new_filename($filename, $seq, $ext,
@@ -336,7 +342,8 @@ sub rename_file
         # force sequence length to be the last 4 digits if it is longer
         # $seq = substr($seq, -4)      if (length($seq) > 4);
         # increase to 4 digits if image files and less than 4 digits
-        $seq = sprintf("%.4d", $seq) if (length($seq) < 4 && $ext =~ /^\.($Const::image_ext)$/i);
+        # ignore if seq is 3 chars, since that's a miliseconds
+        $seq = sprintf("%.4d", $seq) if (length($seq) < 3 && $ext =~ /^\.($Const::image_ext)$/i);
 
         # matches already renamed file, needs to handle with caution
         # safety check, do nothing if offset, tag, or force not specified

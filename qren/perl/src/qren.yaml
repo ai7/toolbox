@@ -20,7 +20,10 @@ filename:
     rename:  ^([a-zA-Z_]*)(\d+)([a-zA-Z]*)( \([\d]+\))?(\..*)$
 
     # pattern from xiaomi phones: IMG_20180726_134426.jpg
-    rename2: (\d{8}[_-]\d{6})(\..*)$
+    # and newer milisecond part:  PXL_20260224_040007629.jpg
+    # and optional annotation:    IMG_20260622_090705290_HDR.jpg 
+    # check the 3 letter prefix so it won't match already renamed
+    rename2: ^(?:[A-Z]{3})_(\d{8}[_-]\d{6})(\d{0,3})(?:_\w+)?(\..*)$
 
     # temporary for iphone files: IMG_0211 1.JPG
     # rename:  ^([a-zA-Z_]*)(\d+)([a-zA-Z 1]*)(\..*)$
@@ -94,7 +97,9 @@ tag:
         Redmi Note 5: redmi_n5
         Pixel 2 XL: pixel2xl
         Pixel 4 XL: pixel4xl
-        ILCE-7RM3: 7rm3
+        Pixel 6: pxl6
+        XT2533-4: mg100   # motorola g100 phone
+        ILCE-7RM3: 7rm3   # sony
 
         # Olympus OM-D E-M5
         E-M5: em5
