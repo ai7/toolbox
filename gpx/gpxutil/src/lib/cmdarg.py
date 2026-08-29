@@ -23,6 +23,7 @@ class UpdateOption(str, enum.Enum):
     TZ = 'tz'
     ADDRESS = 'addr'
     DESC2TIME = 'desc2time'
+    SETCMT = 'setcmt'
 
 
 class DeleteOptionType(click.ParamType):
@@ -60,6 +61,7 @@ class UpdateOptionType(click.ParamType):
 
 
 VALID_COLUMNS = ['name', 'coord', 'ele', 'time', 'lvl4', 'tz', 'loc', 'addr', 'desc', 'src']
+DEFAULT_COLUMNS = ['name', 'coord', 'ele', 'time', 'lvl4', 'loc']
 
 
 class ColumnsType(click.ParamType):
@@ -68,15 +70,36 @@ class ColumnsType(click.ParamType):
     def convert(self, value, param, ctx):
         if value is None:
             return None
-        cols = [c.strip() for c in value.split(',')]
-        invalid = [c for c in cols if c not in VALID_COLUMNS]
+        tokens = [c.strip() for c in value.split(',')]
+
+        # If any token starts with + or -, treat as modifier against default
+        if any(t.startswith(('+', '-')) for t in tokens):
+            cols = list(DEFAULT_COLUMNS)
+            for t in tokens:
+                if t.startswith('+'):
+                    col = t[1:]
+                    if col not in VALID_COLUMNS:
+                        self.fail(f'invalid column: {col}. Choose from: {", ".join(VALID_COLUMNS)}', param, ctx)
+                    if col not in cols:
+                        cols.append(col)
+                elif t.startswith('-'):
+                    col = t[1:]
+                    if col not in VALID_COLUMNS:
+                        self.fail(f'invalid column: {col}. Choose from: {", ".join(VALID_COLUMNS)}', param, ctx)
+                    cols = [c for c in cols if c != col]
+                else:
+                    self.fail(f'mix of plain and +/- columns not allowed: {t}', param, ctx)
+            return cols
+
+        # Plain comma-separated list
+        invalid = [c for c in tokens if c not in VALID_COLUMNS]
         if invalid:
             self.fail(
                 f'invalid column(s): {", ".join(invalid)}.\n'
                 f'Choose from: {", ".join(VALID_COLUMNS)}',
                 param, ctx,
             )
-        return cols
+        return tokens
 
 
 class IndexRangeType(click.ParamType):
@@ -142,14 +165,13 @@ class MyParams:
         self.garmin = garmin              # remove some custom fields
         self.show_map = show_map          # show waypoints in open street map
 
-        if update:
-            self.desctime: bool = True if UpdateOption.DESCTIME in update else False
-            self.fixsec: bool = True if UpdateOption.FIXSEC in update else False
-            self.localtime: bool = True if UpdateOption.LOCALTIME in update else False
-            self.tz: bool = True if UpdateOption.TZ in update else False
-            self.address: bool = True if UpdateOption.ADDRESS in update else False
-            self.desc2time: bool = True if UpdateOption.DESC2TIME in update else False
-        if delete:
-            self.no_extension: bool = True if DeleteOption.EXTENSION in delete else False
-            self.no_sym: bool = True if DeleteOption.SYM in delete else False
-            self.no_type: bool = True if DeleteOption.TYPE in delete else False
+        self.desctime: bool = UpdateOption.DESCTIME in update if update else False
+        self.fixsec: bool = UpdateOption.FIXSEC in update if update else False
+        self.localtime: bool = UpdateOption.LOCALTIME in update if update else False
+        self.tz: bool = UpdateOption.TZ in update if update else False
+        self.address: bool = UpdateOption.ADDRESS in update if update else False
+        self.desc2time: bool = UpdateOption.DESC2TIME in update if update else False
+        self.setcmt: bool = UpdateOption.SETCMT in update if update else False
+        self.no_extension: bool = DeleteOption.EXTENSION in delete if delete else False
+        self.no_sym: bool = DeleteOption.SYM in delete if delete else False
+        self.no_type: bool = DeleteOption.TYPE in delete if delete else False

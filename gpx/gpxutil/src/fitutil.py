@@ -24,6 +24,8 @@ from lib.rename import (
     build_new_filename_fit as _build_new_filename_fit,
     build_new_filename_gpx as _build_new_filename_gpx,
 )
+from lib.fit_location import extract_locations, location_to_waypoint
+from lib.wpio import write_waypoints_to_yaml
 
 SEMICIRCLE_TO_DEG = 180.0 / 2**31
 
@@ -255,11 +257,14 @@ def print_fit_info(filepath):
     gps_count = sum(1 for r in records if 'position_lat' in r)
     segments = extract_track_segments_fit(messages)
     elev_stats = get_elevation_stats(messages)
+    locations = extract_locations(messages)
 
     # for debugging device fields:
     # device = messages.get('device_info_mesgs', [{}])[0]
     # for k, v in device.items():
     #     click.echo(f"  {k}: {v}")
+
+    extra_lines = [f"  Waypoints: {len(locations)} (use --wps to list)"] if locations else None
 
     print_track_info(
         filepath=filepath,
@@ -280,7 +285,33 @@ def print_fit_info(filepath):
         elev_max=elev_stats['max'] if elev_stats else None,
         point_count=f"{len(records)} records ({gps_count} with GPS)",
         segment_count=len(segments),
+        extra_lines=extra_lines,
     )
+
+
+def print_waypoints(filepath, output_file=None):
+    """Print saved locations (waypoints) from a FIT file, optionally exporting to YAML."""
+    messages = read_fit_file(filepath)
+    locations = extract_locations(messages)
+
+    if not locations:
+        click.echo(f"  No waypoints found in: {os.path.basename(filepath)}")
+        return
+
+    click.echo(f"{'─' * 60}")
+    click.echo(f"File: {os.path.basename(filepath)}")
+    click.echo(f"{'─' * 60}")
+    for loc in locations:
+        click.echo(f"  Name:      {loc['name']}")
+        click.echo(f"  Latitude:  {loc['lat']:.6f}")
+        click.echo(f"  Longitude: {loc['lon']:.6f}")
+        if loc['altitude'] is not None:
+            click.echo(f"  Altitude:  {loc['altitude']:.1f} m")
+        click.echo()
+
+    if output_file:
+        waypoints = [location_to_waypoint(loc) for loc in locations]
+        write_waypoints_to_yaml(waypoints, output_file)
 
 
 def print_gpx_info(filepath):
@@ -627,10 +658,13 @@ def rename_files(files, execute=False, device_override=None, sort=False):
 @click.option('--yes', is_flag=True, help='Execute renames (use with --rename).')
 @click.option('--device', type=str, default=None, help='Override device short name for rename.')
 @click.option('--sort', is_flag=True, help='Sort rename output by target filename.')
-def main(fit_files, gpx, show_map, rename, yes, device, sort):
+@click.option('--wps', is_flag=True, help='Print saved locations (waypoints) from FIT files.')
+@click.option('-o', '--output', 'output_file', type=click.File('w'), default=None,
+              help='Write waypoints to a YAML file (use with --wps).')
+def main(fit_files, gpx, show_map, rename, yes, device, sort, wps, output_file):
     """Display information about Garmin FIT files."""
     if not fit_files:
-        click.echo("Usage: fitutil.py [--gpx|--map|--rename] <file.fit> [file2.fit ...]")
+        click.echo("Usage: fitutil.py [--gpx|--map|--rename|--wps] <file.fit> [file2.fit ...]")
         sys.exit(1)
 
     set_verbose(False)
@@ -639,6 +673,9 @@ def main(fit_files, gpx, show_map, rename, yes, device, sort):
         show_tracks_on_map(fit_files)
     elif rename:
         rename_files(fit_files, execute=yes, device_override=device, sort=sort)
+    elif wps:
+        for filepath in fit_files:
+            print_waypoints(filepath, output_file=output_file)
     else:
         for filepath in fit_files:
             ext = os.path.splitext(filepath)[1].lower()

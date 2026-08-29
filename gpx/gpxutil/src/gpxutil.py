@@ -22,7 +22,7 @@ import traceback
 
 # my stuff
 from lib.wpmodel import MyWaypoint, WaypointExtension, MyAddress, MyWidthTracker
-from lib.cmdarg import UpdateOption, UpdateOptionType, DeleteOption, DeleteOptionType, DateRangeType, IndexRangeType, ColumnsType, MyParams
+from lib.cmdarg import UpdateOption, UpdateOptionType, DeleteOption, DeleteOptionType, DateRangeType, IndexRangeType, ColumnsType, MyParams, DEFAULT_COLUMNS
 from lib.wpfilter import filter_by_date, filter_by_location, filter_by_index, parse_relative
 from lib.timefix import TimeFix, TimeZoneGps
 from lib.geocache import set_refresh_mode
@@ -194,7 +194,7 @@ def _get_addr_field(wp, field):
     return (getattr(addr, field, '') or '') if addr else ''
 
 
-def print_waypoints(waypoints: List[MyWaypoint], columns: List[str]):
+def print_waypoints(waypoints: List[MyWaypoint], columns: List[str], annotations: List[str] = None):
     idx_width = len(str(len(waypoints)))
 
     # compute column widths based on requested columns
@@ -245,7 +245,49 @@ def print_waypoints(waypoints: List[MyWaypoint], columns: List[str]):
             elif col == 'src':
                 parts.append(f'{wp.source or "":<{widths["src"]}}')
 
-        print(' '.join(parts))
+        line = ' '.join(parts)
+        if annotations and i <= len(annotations) and annotations[i - 1]:
+            line += ' ' + click.style(annotations[i - 1], fg='bright_green')
+        print(line)
+
+
+def haversine_m(lat1, lon1, lat2, lon2) -> float:
+    """Return distance in meters between two coordinates."""
+    import math
+    R = 6_371_000
+    dlat = math.radians(lat2 - lat1)
+    dlon = math.radians(lon2 - lon1)
+    a = math.sin(dlat/2)**2 + math.cos(math.radians(lat1)) * math.cos(math.radians(lat2)) * math.sin(dlon/2)**2
+    return R * 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a))
+
+
+def find_duplicate_waypoints(waypoints: List[MyWaypoint], radius_m: float):
+    """
+    Find groups of waypoints within radius_m of each other.
+    Returns list of (group, distances) where group is a list of waypoints (>=2)
+    and distances is the distance in meters from the first waypoint to each other member.
+    """
+    n = len(waypoints)
+    visited = [False] * n
+    groups = []
+    for i in range(n):
+        if visited[i]:
+            continue
+        group = [waypoints[i]]
+        dists = [0.0]
+        for j in range(i + 1, n):
+            if visited[j]:
+                continue
+            d = haversine_m(waypoints[i].latitude, waypoints[i].longitude,
+                            waypoints[j].latitude, waypoints[j].longitude)
+            if d <= radius_m:
+                group.append(waypoints[j])
+                dists.append(d)
+                visited[j] = True
+        if len(group) > 1:
+            visited[i] = True
+            groups.append((group, dists))
+    return groups
 
 
 def write_waypoints_to_gpx(waypoints: List[MyWaypoint], output_file: IO) -> None:
@@ -418,7 +460,7 @@ def read_input_file(gpx_files, params: MyParams):
 
 def process_waypoints(waypoints: List[MyWaypoint], params: MyParams):
     """Process the list of waypoints, applying any necessary transformations."""
-    verbose = params.address or params.localtime or params.tz or params.desc2time
+    verbose = params.address or params.localtime or params.tz or params.desc2time or params.setcmt
     total_waypoints = len(waypoints)
     for index, wps in enumerate(waypoints, 1):
         if verbose:
@@ -465,6 +507,35 @@ def process_waypoints(waypoints: List[MyWaypoint], params: MyParams):
                 address_to_fix.CountryCode = None
                 address_to_fix.TimeZone = None
                 address_to_fix.LvL4 = None
+
+        if params.setcmt:
+            parts = []
+            if wps.time:
+                existing_first_line = (wps.comment or '').split('\n')[0].strip()
+                if re.match(r'^\d{4}-\d{2}(-\d{2})?( \?)?$', existing_first_line):
+                    parts.append(existing_first_line)
+                    if wps.description:
+                        click.echo(f'  [{wps.name}] desc cleared: {wps.description!r}')
+                        wps.description = None
+                else:
+                    parts.append(str(wps.time))
+            if wps.elevation is not None:
+                ft = wps.elevation * 3.28084
+                parts.append(f'ele: {wps.elevation:.1f} m ({ft:.1f} ft)')
+            if wps.source:
+                parts.append(f'gps: {wps.source}')
+            if parts:
+                new_cmt = '\n'.join(parts)
+                if wps.comment and wps.comment != new_cmt:
+                    old_display = wps.comment.replace('\n', '↵')
+                    new_display = new_cmt.replace('\n', '↵')
+                    click.echo(f'  [{wps.name}] cmt: {old_display!r} -> {new_display!r}')
+                wps.comment = new_cmt
+                if wps.description:
+                    desc_first_line = wps.description.split('\n')[0].split(',')[0].strip()
+                    if TimeFix.read_timestamp(desc_first_line):
+                        click.echo(f'  [{wps.name}] desc cleared (timestamp): {wps.description!r}')
+                        wps.description = None
 
     # Sort waypoints by name or time if specified
     if params.sort_by:
@@ -514,8 +585,8 @@ Examples:
   gpxutil.py --query 49.2827 -123.1207""")
 @click.argument('gpx_files', nargs=-1, type=click.File(), metavar='[FILES (.gpx | .yaml)]...')
 @optgroup.group('Display')
-@optgroup.option('-c', '--columns', type=ColumnsType(), default='name,coord,ele,time,lvl4,loc',
-                 help='columns to display (name,coord,ele,time,lvl4,tz,loc,addr,src,desc)')
+@optgroup.option('-c', '--columns', type=ColumnsType(), default=','.join(DEFAULT_COLUMNS),
+                 help='columns to display (name,coord,ele,time,lvl4,tz,loc,addr,src,desc); prefix with +/- to add/remove from default')
 @optgroup.option('--map', 'show_map', is_flag=True, default=False,
                  help='open waypoints in OpenStreetMap')
 @optgroup.group('Filtering')
@@ -549,6 +620,8 @@ Examples:
 @optgroup.group('Utility')
 @optgroup.option('--query', nargs=2, type=float, metavar='LAT LON',
                  help='reverse geocode a coordinate')
+@optgroup.option('--dups', 'dupes', is_flag=False, flag_value=10.0, default=None, type=float, metavar='[METERS]',
+                 help='detect duplicate waypoints within radius (default 10m)')
 @optgroup.option('--debug', is_flag=True, default=False,
                  help='enable verbose logging')
 @click.version_option('2.0.1', '-V', '--version')
@@ -558,7 +631,7 @@ def main(gpx_files,
          update: set[UpdateOption], waypoint_src: Optional[str], delete: set[DeleteOption],
          garmin: bool, refresh,
          sort_by: Optional[str], output_file,
-         query, debug: bool):
+         query, dupes, debug: bool):
     """GPX waypoint utility v2.0.1 — read, transform, and export waypoints."""
 
     if query:
@@ -604,6 +677,18 @@ def main(gpx_files,
 
     # read the input file into a list of waypoints
     waypoints = read_input_file(gpx_files, _params)
+
+    if dupes is not None:
+        groups = find_duplicate_waypoints(waypoints, radius_m=dupes)
+        if not groups:
+            click.echo(f'No duplicates found within {dupes:.0f}m.')
+        else:
+            click.echo(f'Found {len(groups)} duplicate group(s) within {dupes:.0f}m:')
+            for i, (group, dists) in enumerate(groups, 1):
+                click.echo('\n' + click.style(f'  Group {i}:', fg='yellow', bold=True))
+                annotations = [''] + [f'[+{d:.1f}m]' for d in dists[1:]]
+                print_waypoints(group, columns, annotations=annotations)
+        return
     if not waypoints:
         click.echo('No waypoints found.  Exiting.')
         return
